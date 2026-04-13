@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>실시간 견적 | Compatch</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .sticky-summary { position: sticky; top: 5rem; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900">
+
+    <nav class="bg-white border-b border-gray-100 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+            <a href="index.html" class="text-xl font-black text-blue-600">COMPATCH</a>
+            <div class="hidden md:flex gap-6 text-sm font-semibold">
+                <a href="#" class="text-blue-600">실시간 견적</a>
+                <a href="#">중고 매입</a>
+                <a href="#">자료실</a>
+            </div>
+            <button class="text-sm font-bold text-gray-500">로그아웃</button>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <div class="flex flex-col lg:flex-row gap-8">
+            
+            <main class="flex-1">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-800">PC 견적 내기</h2>
+                    <span class="text-xs text-gray-400">다나와 실시간 시세 기준</span>
+                </div>
+
+                <div class="flex gap-2 overflow-x-auto pb-4 mb-6 no-scrollbar">
+                    <button class="px-5 py-2 bg-blue-600 text-white rounded-full text-sm font-bold">CPU</button>
+                    <button class="px-5 py-2 bg-white border border-gray-200 rounded-full text-sm font-medium hover:bg-gray-50">메인보드</button>
+                    <button class="px-5 py-2 bg-white border border-gray-200 rounded-full text-sm font-medium hover:bg-gray-50">메모리</button>
+                    <button class="px-5 py-2 bg-white border border-gray-200 rounded-full text-sm font-medium hover:bg-gray-50">그래픽카드</button>
+                    <button class="px-5 py-2 bg-white border border-gray-200 rounded-full text-sm font-medium hover:bg-gray-50">SSD/HDD</button>
+                </div>
+
+                <div class="bg-white p-4 rounded-xl border border-gray-100 mb-6 flex gap-4">
+                    <input type="text" placeholder="부품명을 검색하세요..." class="flex-1 bg-gray-50 border-none rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                    <select class="bg-gray-50 border-none rounded-lg px-4 py-2 text-sm outline-none">
+                        <option>인기순</option>
+                        <option>낮은가격순</option>
+                    </select>
+                </div>
+
+                <div class="space-y-3">
+                    <div class="bg-white p-4 rounded-xl border border-gray-100 flex items-center justify-between hover:border-blue-300 transition group">
+                        <div class="flex items-center gap-4">
+                            <div class="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center text-[10px] text-gray-400">IMG</div>
+                            <div>
+                                <h4 class="font-bold text-sm">인텔 코어i5-14세대 14400F (랩터레이크 리프레시)</h4>
+                                <p class="text-xs text-gray-500 mt-1">소켓1700 / 10코어 / 16스레드 / 최대 4.7GHz</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-black text-lg">245,000원</p>
+                            <button class="mt-1 text-xs font-bold text-blue-600 border border-blue-600 px-3 py-1 rounded-md hover:bg-blue-600 hover:text-white transition">추가하기</button>
+                        </div>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-gray-100 flex items-center justify-between hover:border-blue-300 transition group">
+                        <div class="flex items-center gap-4">
+                            <div class="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center text-[10px] text-gray-400">IMG</div>
+                            <div>
+                                <h4 class="font-bold text-sm">AMD 라이젠5-5세대 7500F (라파엘)</h4>
+                                <p class="text-xs text-gray-500 mt-1">소켓AM5 / 6코어 / 12스레드 / 최대 5.0GHz</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-black text-lg">198,000원</p>
+                            <button class="mt-1 text-xs font-bold text-blue-600 border border-blue-600 px-3 py-1 rounded-md hover:bg-blue-600 hover:text-white transition">추가하기</button>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <aside class="w-full lg:w-96">
+                <div class="sticky-summary bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                    <div class="p-6 bg-slate-900 text-white">
+                        <h3 class="text-lg font-bold">선택된 부품 목록</h3>
+                        <p class="text-xs text-slate-400 mt-1">호환성 체크: <span class="text-green-400">정상</span></p>
+                    </div>
+                    
+                    <div class="p-6">
+                        <ul class="space-y-4 mb-8">
+                            <li class="flex justify-between items-start text-sm">
+                                <div class="flex-1">
+                                    <p class="font-bold">CPU</p>
+                                    <p class="text-gray-500 text-xs truncate w-48">인텔 코어i5-14세대 14400F</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="font-bold">245,000원</p>
+                                    <button class="text-[10px] text-red-500 underline">삭제</button>
+                                </div>
+                            </li>
+                            </ul>
+
+                        <div class="border-t border-dashed pt-4 mb-6">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-gray-500 text-sm">부품 합계</span>
+                                <span class="font-semibold">245,000원</span>
+                            </div>
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="text-gray-500 text-sm">조립비/공임</span>
+                                <span class="font-semibold">30,000원</span>
+                            </div>
+                            <div class="flex justify-between items-end">
+                                <span class="text-gray-900 font-bold">최종 합계</span>
+                                <span class="text-2xl font-black text-blue-600">275,000원</span>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2">
+                            <button onclick="generateShareURL()" class="py-3 border border-gray-200 rounded-xl font-bold text-sm hover:bg-gray-50 transition active:scale-95">
+    견적 공유 (URL 복사)
+</button>
+
+                            <button class="py-3 border border-gray-200 rounded-xl font-bold text-sm hover:bg-gray-50">PDF 저장</button>
+                        </div>
+                        <button onclick="openConsultModal()" class="w-full mt-3 py-4 bg-blue-600 text-white rounded-xl font-bold text-lg hover:bg-blue-700 shadow-lg shadow-blue-600/20">
+                            구매 상담 신청하기
+                        </button>
+                    </div>
+                </div>
+            </aside>
+
+        </div>
+    </div>
+<div id="consultModal" class="hidden fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-md rounded-2xl overflow-hidden shadow-2xl animate-scale-up">
+        <div class="p-6 border-b flex justify-between items-center">
+            <h3 class="text-xl font-bold">구매 상담 신청</h3>
+            <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+        </div>
+        <form id="consultForm" class="p-6 space-y-4">
+            <input type="text" id="userName" required class="w-full border rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-blue-600" placeholder="성함">
+            <input type="tel" id="userPhone" required class="w-full border rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-blue-600" placeholder="연락처 (010-0000-0000)">
+            <textarea id="userMemo" class="w-full border rounded-lg px-4 py-2 h-24 outline-none focus:ring-2 focus:ring-blue-600" placeholder="추가 요청사항을 적어주세요."></textarea>
+            <div class="bg-gray-50 p-4 rounded-xl">
+                <p class="text-xs text-gray-500 mb-1">최종 견적 금액</p>
+                <p id="modalTotalPrice" class="text-xl font-black text-blue-600">0원</p>
+            </div>
+            <button type="submit" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-blue-700 transition">
+                상담 신청 완료하기
+            </button>
+        </form>
+    </div>
+</div>
+<script>
+    // 모달 제어 함수 추가
+    function openConsultModal() {
+        if (selectedItems.length === 0) {
+            alert("선택된 부품이 없습니다. 견적을 먼저 작성해 주세요.");
+            return;
+        }
+        document.getElementById('modalTotalPrice').innerText = document.querySelector('.text-2xl.font-black.text-blue-600').innerText;
+        document.getElementById('consultModal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+        document.getElementById('consultModal').classList.add('hidden');
+    }
+</script>
+
+<script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+
+<script>
+  const firebaseConfig = {
+    databaseURL: "https://compatch-e7305-default-rtdb.asia-southeast1.firebasedatabase.app/"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+</script>
+
+<script>
+    // 1. 견적 데이터 상태 관리
+    let selectedItems = [];
+    const assemblyFee = 30000; // 조립 공임비 고정
+
+    // 2. 부품 추가 함수
+    function addItem(id, category, name, price) {
+        // 동일 카테고리 부품은 하나만 존재하도록 (기존 부품 교체 로직)
+        selectedItems = selectedItems.filter(item => item.category !== category);
+        
+        selectedItems.push({ id, category, name, price });
+        updateEstimateUI();
+    }
+
+    // 3. 부품 삭제 함수
+    function removeItem(category) {
+        selectedItems = selectedItems.filter(item => item.category !== category);
+        updateEstimateUI();
+    }
+
+    // 4. UI 업데이트 함수 (리스트 렌더링 및 가격 계산)
+    function updateEstimateUI() {
+        const listContainer = document.querySelector('.sticky-summary ul');
+        const totalPriceEl = document.querySelector('.text-2xl.font-black.text-blue-600');
+        const subTotalEl = document.querySelector('.font-semibold'); // 첫 번째 font-semibold (부품합계)
+
+        // 목록 초기화
+        listContainer.innerHTML = '';
+        let partsTotal = 0;
+
+        if (selectedItems.length === 0) {
+            listContainer.innerHTML = '<li class="text-sm text-gray-400 text-center py-4">부품을 추가해 주세요.</li>';
+        } else {
+            selectedItems.forEach(item => {
+                partsTotal += item.price;
+                const li = document.createElement('li');
+                li.className = 'flex justify-between items-start text-sm animate-fade-in';
+                li.innerHTML = `
+                    <div class="flex-1">
+                        <p class="font-bold">${item.category}</p>
+                        <p class="text-gray-500 text-xs truncate w-48">${item.name}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold">${item.price.toLocaleString()}원</p>
+                        <button onclick="removeItem('${item.category}')" class="text-[10px] text-red-500 underline">삭제</button>
+                    </div>
+                `;
+                listContainer.appendChild(li);
+            });
+        }
+
+        // 가격 계산 반영
+        const finalTotal = partsTotal > 0 ? partsTotal + assemblyFee : 0;
+        subTotalEl.innerText = `${partsTotal.toLocaleString()}원`;
+        totalPriceEl.innerText = `${finalTotal.toLocaleString()}원`;
+    }
+
+    // 5. 버튼 이벤트 바인딩 (예시 데이터 연동)
+   
+ // 부품 리스트의 '추가하기' 버튼들에 이 이벤트를 연결합니다.
+    document.querySelectorAll('.group button').forEach((btn, index) => {
+        btn.addEventListener('click', () => {
+            // 임시 데이터 (실제 서비스에서는 API나 data-속성에서 가져옴)
+            const mockData = [
+                { id: 1, cat: 'CPU', name: '인텔 코어i5-14400F', price: 245000 },
+                { id: 2, cat: 'CPU', name: 'AMD 라이젠5 7500F', price: 198000 }
+            ];
+            const data = mockData[index];
+            if(data) addItem(data.id, data.cat, data.name, data.price);
+        });
+    });
+// 기존 consultForm 제출 이벤트 내부 수정
+document.getElementById('consultForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const requestData = {
+        name: document.getElementById('userName').value,
+        phone: document.getElementById('userPhone').value,
+        memo: document.getElementById('userMemo').value,
+        items: selectedItems,
+        totalPrice: document.getElementById('modalTotalPrice').innerText,
+        type: "상담 신청",
+        timestamp: Date.now()
+    };
+
+    // Firebase에 데이터 밀어넣기 (push)
+    db.ref('requests').push(requestData, (error) => {
+        if (error) {
+            alert("저장 중 오류가 발생했습니다.");
+        } else {
+            alert("상담 신청이 완료되었습니다! 곧 연락드리겠습니다.");
+            closeModal();
+            location.reload(); // 폼 초기화
+        }
+    });
+});
+</script>
+<div id="consultModal" class="hidden fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-md rounded-2xl overflow-hidden shadow-2xl">
+        <div class="p-6 border-b flex justify-between items-center">
+            <h3 class="text-xl font-bold">구매 상담 신청</h3>
+            <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+        </div>
+        <form id="consultForm" class="p-6 space-y-4">
+            <input type="text" id="userName" required class="w-full border rounded-lg px-4 py-2 outline-none" placeholder="성함">
+            <input type="tel" id="userPhone" required class="w-full border rounded-lg px-4 py-2 outline-none" placeholder="연락처 (010-0000-0000)">
+            <textarea id="userMemo" class="w-full border rounded-lg px-4 py-2 h-24 outline-none" placeholder="추가 요청사항"></textarea>
+            <div class="bg-gray-50 p-4 rounded-xl">
+                <p class="text-xs text-gray-500">최종 견적 금액</p>
+                <p id="modalTotalPrice" class="text-xl font-black text-blue-600">0원</p>
+            </div>
+            <button type="submit" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold">신청 완료</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // 모달 열기
+    function openConsultModal() {
+        if (selectedItems.length === 0) return alert("부품을 먼저 선택해주세요.");
+        document.getElementById('modalTotalPrice').innerText = document.querySelector('.text-2xl.font-black.text-blue-600').innerText;
+        document.getElementById('consultModal').classList.remove('hidden');
+    }
+    // 모달 닫기
+    function closeModal() {
+        document.getElementById('consultModal').classList.add('hidden');
+    }
+    // 상담 신청 버튼에 이벤트 연결 (HTML 내의 버튼을 찾아서 수정하세요)
+    // <button onclick="openConsultModal()" class="...">구매 상담 신청하기</button>
+</script>
+</body>
+</html>

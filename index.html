@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compatch | 실시간 PC 견적 및 중고 매입</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900">
+
+    <nav class="sticky top-0 z-50 bg-white border-b border-gray-100">
+        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-8">
+                <a href="#" class="text-2xl font-black text-blue-600 tracking-tighter">COMPATCH</a>
+                <div class="hidden md:flex gap-6 text-sm font-semibold text-gray-600">
+                    <a href="index.html" class="hover:text-blue-600">메인으로</a>
+                    <a href="#" class="hover:text-blue-600">회사소개</a>
+                    <a href="#" class="hover:text-blue-600">뉴스</a>
+                    <a href="estimate.html" class="hover:text-blue-600 text-blue-600">실시간 견적</a>
+                    <a href="trade-in.html" class="hover:text-blue-600">중고 매입</a>
+                    <a href="#" class="hover:text-blue-600">자료실</a>
+                    <a href="admin-list.html" class="hover:text-blue-600">관리자</a>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <button class="hidden sm:block text-sm font-medium text-gray-500">로그인</button>
+                <button class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-700 transition">회원가입</button>
+                <button class="md:hidden text-2xl">≡</button>
+            </div>
+        </div>
+    </nav>
+
+    <section class="bg-slate-900 text-white py-20 px-4">
+        <div class="max-w-7xl mx-auto flex flex-col items-center text-center">
+            <span class="inline-block px-4 py-1 bg-blue-500/20 text-blue-400 rounded-full text-sm font-bold mb-6">
+                Real-time Danawa API Linked
+            </span>
+            <h1 class="text-4xl md:text-6xl font-black mb-6 leading-tight">
+                가장 투명한 <span class="text-blue-500">컴퓨터 견적</span>의 시작
+            </h1>
+            <p class="text-gray-400 text-lg md:text-xl mb-10 max-w-2xl">
+                다나와 실시간 최저가를 반영하여 거품 없는 가격을 제시합니다.<br class="hidden md:block">
+                내 중고 PC의 최고가 매입 신청도 한 번에 해결하세요.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+                <a href="#" class="bg-blue-600 text-white px-10 py-4 rounded-xl font-bold text-lg hover:bg-blue-700 transition shadow-xl shadow-blue-600/20">
+                    실시간 견적 내기
+                </a>
+                <a href="#" class="bg-slate-800 text-white px-10 py-4 rounded-xl font-bold text-lg hover:bg-slate-700 transition border border-slate-700">
+                    중고 매입 신청
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section class="max-w-7xl mx-auto px-4 -mt-10 mb-20">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-xl transition group">
+                <div class="text-4xl mb-4 group-hover:scale-110 transition">🖥️</div>
+                <h3 class="text-lg font-bold mb-2">PC 견적</h3>
+                <p class="text-sm text-gray-500">부품별 호환성 자동 체크 시스템</p>
+            </div>
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-xl transition group">
+                <div class="text-4xl mb-4 group-hover:scale-110 transition">💰</div>
+                <h3 class="text-lg font-bold mb-2">중고 매입</h3>
+                <p class="text-sm text-gray-500">사양 입력 후 즉시 시세 확인</p>
+            </div>
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-xl transition group">
+                <div class="text-4xl mb-4 group-hover:scale-110 transition">📂</div>
+                <h3 class="text-lg font-bold mb-2">자료실</h3>
+                <p class="text-sm text-gray-500">드라이버 및 브랜드별 매뉴얼</p>
+            </div>
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-xl transition group">
+                <div class="text-4xl mb-4 group-hover:scale-110 transition">🗨️</div>
+                <h3 class="text-lg font-bold mb-2">고객센터</h3>
+                <p class="text-sm text-gray-500">전문가 1:1 조립 상담 서비스</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="max-w-7xl mx-auto px-4 mb-20">
+        <div class="flex justify-between items-end mb-8">
+            <div>
+                <h2 class="text-3xl font-black mb-2">실시간 인기 부품</h2>
+                <p class="text-gray-500">다나와 실시간 랭킹 기준 (5분 전 업데이트)</p>
+            </div>
+            <a href="#" class="text-blue-600 font-semibold text-sm">더보기 →</a>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="bg-white p-5 rounded-xl border border-gray-100 hover:border-blue-200 transition">
+                <div class="h-40 bg-gray-100 rounded-lg mb-4 flex items-center justify-center text-gray-400">부품 이미지</div>
+                <span class="text-xs font-bold text-blue-500 bg-blue-50 px-2 py-1 rounded">CPU</span>
+                <h4 class="font-bold mt-2 text-sm line-clamp-1">인텔 코어i5-14세대 14400F</h4>
+                <div class="mt-4 flex justify-between items-center">
+                    <span class="text-xl font-black">245,000원</span>
+                    <span class="text-xs text-red-500 font-bold">📉 2.1%</span>
+                </div>
+            </div>
+            <div class="bg-white p-5 rounded-xl border border-gray-100 hover:border-blue-200 transition">
+                <div class="h-40 bg-gray-100 rounded-lg mb-4 flex items-center justify-center text-gray-400">부품 이미지</div>
+                <span class="text-xs font-bold text-green-500 bg-green-50 px-2 py-1 rounded">VGA</span>
+                <h4 class="font-bold mt-2 text-sm line-clamp-1">RTX 4060 Ti 벤투스 2X 블랙 OC</h4>
+                <div class="mt-4 flex justify-between items-center">
+                    <span class="text-xl font-black">582,000원</span>
+                    <span class="text-xs text-gray-400 font-bold">- 0%</span>
+                </div>
+            </div>
+            </div>
+    </section>
+
+    <footer class="bg-gray-100 py-16 px-4">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10">
+            <div class="col-span-1 md:col-span-2">
+                <h2 class="text-2xl font-black text-gray-300 mb-6 uppercase">Compatch</h2>
+                <p class="text-sm text-gray-500 leading-relaxed">
+                    상호명: 컴패치 (Compatch Dot Com) | 대표자: 이성호<br>
+                    사업자등록번호: 000-00-00000 | 통신판매업: 제2026-서울강남-0000호<br>
+                    주소: 서울특별시 강남구 어딘가 렉스김 빌딩 4층
+                </p>
+            </div>
+            <div>
+                <h4 class="font-bold mb-4 text-gray-900">고객지원</h4>
+                <ul class="text-sm text-gray-500 space-y-2">
+                    <li><a href="#">자주 묻는 질문</a></li>
+                    <li><a href="#">1:1 문의하기</a></li>
+                    <li><a href="#">A/S 안내</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-bold mb-4 text-gray-900">Legal</h4>
+                <ul class="text-sm text-gray-500 space-y-2">
+                    <li><a href="#">이용약관</a></li>
+                    <li><a href="#">개인정보처리방침</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="max-w-7xl mx-auto mt-10 pt-8 border-t border-gray-200 text-center text-xs text-gray-400">
+            © 2026 Compatch Dot Com. All Rights Reserved.
+        </div>
+    </footer>
+<script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+
+<script>
+  const firebaseConfig = {
+    databaseURL: "https://compatch-e7305-default-rtdb.asia-southeast1.firebasedatabase.app/"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+</script>
+</body>
+</html>
