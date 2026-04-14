@@ -193,6 +193,47 @@
         updateEstimateUI();
     }
 
+// 1. Firebase에서 네이버 시세 데이터를 실시간으로 가져와서 화면에 뿌리기
+function loadRealtimeParts() {
+    const partsContainer = document.querySelector('.grid.grid-cols-2'); // 부품 카드가 들어갈 곳
+    
+    // Firebase의 'parts' 경로 감시
+    db.ref('parts').on('value', (snapshot) => {
+        const categories = snapshot.val();
+        if (!categories) return;
+
+        partsContainer.innerHTML = ''; // 기존 정적 카드들 삭제
+
+        // CPU, GPU 등 카테고리별로 반복 실행
+        Object.keys(categories).forEach(cat => {
+            const items = categories[cat];
+            Object.keys(items).forEach(id => {
+                const item = items[id];
+                // 네이버 API로 가져온 정보를 바탕으로 카드 생성
+                const card = `
+                    <div class="group bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-blue-200 transition-all cursor-pointer">
+                        <div class="aspect-square bg-gray-50 rounded-xl mb-4 flex items-center justify-center overflow-hidden">
+                            <img src="${item.image}" alt="${item.name}" class="w-full h-full object-contain group-hover:scale-110 transition">
+                        </div>
+                        <div class="inline-block px-2 py-1 bg-blue-50 text-blue-600 text-[10px] font-bold rounded-md mb-2">${cat.toUpperCase()}</div>
+                        <h3 class="font-bold text-gray-900 text-sm mb-1 truncate">${item.name}</h3>
+                        <p class="text-blue-600 font-black text-lg">${item.price.toLocaleString()}원</p>
+                        <button onclick="addItem('${id}', '${cat}', '${item.name}', ${item.price})" 
+                                class="w-full mt-4 py-3 bg-gray-900 text-white rounded-xl font-bold text-xs group-hover:bg-blue-600 transition">
+                            추가하기
+                        </button>
+                    </div>
+                `;
+                partsContainer.innerHTML += card;
+            });
+        });
+    });
+}
+
+// 2. 페이지 로드 시 위 함수 실행
+window.onload = loadRealtimeParts;
+
+
     // 3. 부품 삭제 함수
     function removeItem(category) {
         selectedItems = selectedItems.filter(item => item.category !== category);
