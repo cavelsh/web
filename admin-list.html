@@ -23,7 +23,6 @@
                     <a href="estimate.html" class="hover:text-blue-600">실시간 견적</a>
                     <a href="trade-in.html" class="hover:text-blue-600">중고 판매</a>
                     <a href="archive.html" class="hover:text-blue-600">자료실</a>
-                    <a href="admin-list.html" class="hover:text-blue-600">관리자</a>
                 </div>
             </div>
             <button onclick="logout()" class="text-sm font-bold text-red-500 bg-red-50 px-4 py-2 rounded-xl">로그아웃</button>
@@ -211,7 +210,7 @@
 
         // 공통 기능: 삭제, 로그인 등
         function checkAdmin() {
-            if(document.getElementById('adminPw').value === "0927") {
+            if(document.getElementById('adminPw').value === "1004") {
                 sessionStorage.setItem("adminLoggedIn", "true");
                 location.reload();
             } else { alert("인증키가 틀렸습니다."); }
