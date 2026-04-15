@@ -40,36 +40,38 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        function loadUsedProducts() {
-            const grid = document.getElementById('usedProductGrid');
-            db.ref('used_items').on('value', (snapshot) => {
-                const data = snapshot.val();
-                if(!data) {
-                    grid.innerHTML = '<p class="col-span-full text-center py-20 text-gray-400">현재 판매 중인 중고 상품이 없습니다.</p>';
-                    return;
-                }
-
-                grid.innerHTML = Object.keys(data).reverse().map(key => {
-                    const item = data[key];
-                    return `
-                        <div class="bg-white rounded-[2.5rem] border border-gray-100 overflow-hidden shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 group">
-                            <div class="aspect-[4/3] overflow-hidden bg-gray-50">
-                                <img src="${item.image}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
-                            </div>
-                            <div class="p-8">
-                                <h3 class="font-black text-xl mb-2 text-gray-800">${item.name}</h3>
-                                <p class="text-2xl font-black text-blue-600 mb-8">${item.price.toLocaleString()}원</p>
-                                <button onclick="applyPurchase('${item.name}', ${item.price})" 
-                                        class="w-full py-5 bg-gray-900 text-white rounded-2xl font-black hover:bg-blue-600 transition shadow-lg shadow-gray-200 hover:shadow-blue-200">
-                                    구매 상담 신청
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-            });
+function loadUsedProducts() {
+    // [중요] 'products'가 아닌 'used_db' 경로를 바라보도록 수정
+    db.ref('used_db').on('value', (snapshot) => {
+        const data = snapshot.val();
+        const container = document.getElementById('usedProductContainer');
+        
+        if(!data) {
+            container.innerHTML = '<p class="col-span-full text-center py-20 text-gray-400 font-bold">현재 판매 중인 중고 상품이 없습니다.</p>';
+            return;
         }
 
+        const keys = Object.keys(data).reverse();
+        container.innerHTML = keys.map(key => {
+            const item = data[key];
+            return `
+                <div class="bg-white rounded-[40px] overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all group">
+                    <div class="aspect-video overflow-hidden bg-gray-100">
+                        <img src="${item.image || item.img}" alt="${item.name}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                    </div>
+                    <div class="p-8">
+                        <h3 class="font-black text-xl mb-2 text-gray-800 truncate">${item.name}</h3>
+                        <p class="text-2xl font-black text-blue-600 mb-8">${(item.price || 0).toLocaleString()}원</p>
+                        <button onclick="applyPurchase('${item.name}', ${item.price})" 
+                                class="w-full py-5 bg-gray-900 text-white rounded-2xl font-black hover:bg-blue-600 transition shadow-lg shadow-gray-200 hover:shadow-blue-200">
+                            구매 상담 신청
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    });
+}
         function applyPurchase(itemName, itemPrice) {
             const name = prompt("고객님의 성함을 입력해주세요.");
             if(!name) return;
