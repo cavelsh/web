@@ -87,49 +87,77 @@
 
         let selectedItems = []; // { id, name, price, cat, quantity }
 
-        // 메인 시리즈 카테고리 정의
-        const MAIN_SERIES = ["인텔 울트라 시리즈", "인텔 14세대 시리즈", "AMD 시리즈"];
+let selectedItems = []; 
+    const MAIN_SERIES = ["인텔 울트라 시리즈", "인텔 14세대 시리즈", "AMD 시리즈"];
+    const PART_TYPES = ["CPU", "RAM", "GPU", "SSD"]; // 부품 타입 정의
 
-        function loadParts() {
-            const container = document.getElementById('categorySections');
-            
-            db.ref('parts').on('value', (snapshot) => {
-                const data = snapshot.val();
-                if (!data) return;
+    function loadParts() {
+        const container = document.getElementById('categorySections');
+        
+        // parts 노드 전체를 모니터링
+        db.ref('parts').on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (!data) {
+                container.innerHTML = '<div class="p-10 text-center text-gray-400">등록된 부품 데이터가 없습니다.</div>';
+                return;
+            }
 
-                container.innerHTML = ''; 
+            container.innerHTML = ''; 
 
-                MAIN_SERIES.forEach(series => {
-                    const seriesDiv = document.createElement('div');
-                    seriesDiv.innerHTML = `<h3 class="text-xl font-extrabold mb-6 border-l-4 border-blue-600 pl-3">${series}</h3>`;
+            MAIN_SERIES.forEach(series => {
+                if (!data[series]) return; // 해당 시리즈 데이터가 없으면 건너뜀
+
+                const seriesDiv = document.createElement('div');
+                seriesDiv.className = "mb-16";
+                seriesDiv.innerHTML = `<h3 class="text-2xl font-black mb-6 border-l-4 border-blue-600 pl-3">${series}</h3>`;
+                
+                // 부품 타입별(CPU -> RAM -> GPU -> SSD)로 정렬하여 출력
+                PART_TYPES.forEach(pType => {
+                    const typeSection = document.createElement('div');
+                    typeSection.className = "mb-8";
+                    typeSection.innerHTML = `<h4 class="text-sm font-bold text-gray-400 mb-4 ml-1">${pType} 목록</h4>`;
                     
                     const grid = document.createElement('div');
-                    grid.className = "grid grid-cols-2 md:grid-cols-3 gap-4 mb-10";
+                    grid.className = "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4";
                     
-                    // 해당 시리즈에 속하는 부품 필터링 (Firebase 데이터 구조에 따라 cat 체크)
-                    if (data[series]) {
-                        Object.keys(data[series]).forEach(id => {
-                            const item = data[series][id];
+                    let hasItems = false;
+                    
+                    // 데이터 구조 순회 (series -> safe_name)
+                    Object.keys(data[series]).forEach(safeName => {
+                        const item = data[series][safeName];
+                        
+                        // 아이템의 type이 현재 순회 중인 pType과 일치할 때만 렌더링
+                        if (item.type === pType) {
+                            hasItems = true;
                             grid.innerHTML += `
-                                <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm hover:border-blue-300 transition-all">
-                                    <div class="aspect-square bg-gray-50 rounded-xl mb-3 flex items-center justify-center overflow-hidden">
-                                        <img src="${item.image}" class="w-24 h-24 object-contain">
+                                <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm hover:border-blue-300 transition-all flex flex-col justify-between">
+                                    <div>
+                                        <div class="aspect-square bg-gray-50 rounded-xl mb-3 flex items-center justify-center overflow-hidden p-2">
+                                            <img src="${item.image}" class="w-full h-full object-contain" onerror="this.src='https://via.placeholder.com/150?text=No+Image'">
+                                        </div>
+                                        <div class="text-[10px] text-blue-500 font-bold mb-1">${item.type}</div>
+                                        <h4 class="font-bold text-xs mb-2 h-10 line-clamp-2 leading-tight text-gray-700">${item.name}</h4>
                                     </div>
-                                    <div class="text-[10px] text-blue-500 font-bold mb-1">${item.type || 'CPU/RAM/GPU'}</div>
-                                    <h4 class="font-bold text-sm mb-2 h-10 line-clamp-2">${item.name}</h4>
-                                    <p class="text-blue-600 font-black mb-3">${item.price.toLocaleString()}원</p>
-                                    <button onclick="addItem('${id}', '${series}', '${item.name}', ${item.price})" 
-                                            class="w-full py-2 bg-gray-900 text-white rounded-lg text-xs font-bold hover:bg-blue-600 transition">추가</button>
+                                    <div>
+                                        <p class="text-blue-600 font-black text-sm mb-3">${item.price.toLocaleString()}원</p>
+                                        <button onclick="addItem('${safeName}', '${series}', '${item.name.replace(/'/g, "\\'")}', ${item.price})" 
+                                                class="w-full py-2 bg-gray-900 text-white rounded-lg text-xs font-bold hover:bg-blue-600 transition">추가</button>
+                                    </div>
                                 </div>
                             `;
-                        });
-                    }
-                    seriesDiv.appendChild(grid);
-                    container.appendChild(seriesDiv);
-                });
-            });
-        }
+                        }
+                    });
 
+                    if (hasItems) {
+                        typeSection.appendChild(grid);
+                        seriesDiv.appendChild(typeSection);
+                    }
+                });
+                
+                container.appendChild(seriesDiv);
+            });
+        });
+    }
         function addItem(id, cat, name, price) {
             const existIndex = selectedItems.findIndex(item => item.id === id);
             if (existIndex > -1) {
