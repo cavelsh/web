@@ -76,7 +76,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
 
     <script>
-        // Firebase 설정 (기존 정보 유지)
+        // 1. Firebase 설정
         const firebaseConfig = {
             authDomain: "compatch-e7305.firebaseapp.com",
             databaseURL: "https://compatch-e7305-default-rtdb.asia-southeast1.firebasedatabase.app/",
@@ -85,79 +85,76 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        let selectedItems = []; // { id, name, price, cat, quantity }
+        // 2. 전역 변수 (중복 선언 제거)
+        let selectedItems = []; 
+        const MAIN_SERIES = ["인텔 울트라 시리즈", "인텔 14세대 시리즈", "AMD 시리즈"];
+        const PART_TYPES = ["CPU", "RAM", "GPU", "SSD"];
 
-let selectedItems = []; 
-    const MAIN_SERIES = ["인텔 울트라 시리즈", "인텔 14세대 시리즈", "AMD 시리즈"];
-    const PART_TYPES = ["CPU", "RAM", "GPU", "SSD"]; // 부품 타입 정의
+        // 3. 데이터 로드 함수
+        function loadParts() {
+            const container = document.getElementById('categorySections');
+            
+            db.ref('parts').on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (!data) {
+                    container.innerHTML = '<div class="p-10 text-center text-gray-400">데이터를 찾을 수 없습니다. 파이썬 스크립트를 먼저 실행해주세요.</div>';
+                    return;
+                }
 
-    function loadParts() {
-        const container = document.getElementById('categorySections');
-        
-        // parts 노드 전체를 모니터링
-        db.ref('parts').on('value', (snapshot) => {
-            const data = snapshot.val();
-            if (!data) {
-                container.innerHTML = '<div class="p-10 text-center text-gray-400">등록된 부품 데이터가 없습니다.</div>';
-                return;
-            }
+                container.innerHTML = ''; 
 
-            container.innerHTML = ''; 
+                MAIN_SERIES.forEach(series => {
+                    if (!data[series]) return;
 
-            MAIN_SERIES.forEach(series => {
-                if (!data[series]) return; // 해당 시리즈 데이터가 없으면 건너뜀
-
-                const seriesDiv = document.createElement('div');
-                seriesDiv.className = "mb-16";
-                seriesDiv.innerHTML = `<h3 class="text-2xl font-black mb-6 border-l-4 border-blue-600 pl-3">${series}</h3>`;
-                
-                // 부품 타입별(CPU -> RAM -> GPU -> SSD)로 정렬하여 출력
-                PART_TYPES.forEach(pType => {
-                    const typeSection = document.createElement('div');
-                    typeSection.className = "mb-8";
-                    typeSection.innerHTML = `<h4 class="text-sm font-bold text-gray-400 mb-4 ml-1">${pType} 목록</h4>`;
+                    const seriesDiv = document.createElement('div');
+                    seriesDiv.className = "mb-16";
+                    seriesDiv.innerHTML = `<h3 class="text-2xl font-black mb-6 border-l-4 border-blue-600 pl-3">${series}</h3>`;
                     
-                    const grid = document.createElement('div');
-                    grid.className = "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4";
-                    
-                    let hasItems = false;
-                    
-                    // 데이터 구조 순회 (series -> safe_name)
-                    Object.keys(data[series]).forEach(safeName => {
-                        const item = data[series][safeName];
+                    PART_TYPES.forEach(pType => {
+                        const typeSection = document.createElement('div');
+                        typeSection.className = "mb-8";
                         
-                        // 아이템의 type이 현재 순회 중인 pType과 일치할 때만 렌더링
-                        if (item.type === pType) {
-                            hasItems = true;
-                            grid.innerHTML += `
-                                <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm hover:border-blue-300 transition-all flex flex-col justify-between">
-                                    <div>
-                                        <div class="aspect-square bg-gray-50 rounded-xl mb-3 flex items-center justify-center overflow-hidden p-2">
-                                            <img src="${item.image}" class="w-full h-full object-contain" onerror="this.src='https://via.placeholder.com/150?text=No+Image'">
+                        const grid = document.createElement('div');
+                        grid.className = "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4";
+                        
+                        let hasItems = false;
+                        
+                        Object.keys(data[series]).forEach(safeName => {
+                            const item = data[series][safeName];
+                            if (item.type === pType) {
+                                hasItems = true;
+                                grid.innerHTML += `
+                                    <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm hover:border-blue-300 transition-all flex flex-col justify-between">
+                                        <div>
+                                            <div class="aspect-square bg-gray-50 rounded-xl mb-3 flex items-center justify-center overflow-hidden p-2">
+                                                <img src="${item.image}" class="w-full h-full object-contain" onerror="this.src='https://via.placeholder.com/150?text=No+Image'">
+                                            </div>
+                                            <div class="text-[10px] text-blue-500 font-bold mb-1">${item.type}</div>
+                                            <h4 class="font-bold text-xs mb-2 h-10 line-clamp-2 text-gray-700">${item.name}</h4>
                                         </div>
-                                        <div class="text-[10px] text-blue-500 font-bold mb-1">${item.type}</div>
-                                        <h4 class="font-bold text-xs mb-2 h-10 line-clamp-2 leading-tight text-gray-700">${item.name}</h4>
+                                        <div>
+                                            <p class="text-blue-600 font-black text-sm mb-3">${item.price.toLocaleString()}원</p>
+                                            <button onclick="addItem('${safeName}', '${series}', '${item.name.replace(/'/g, "\\'")}', ${item.price})" 
+                                                    class="w-full py-2 bg-gray-900 text-white rounded-lg text-xs font-bold hover:bg-blue-600 transition">추가</button>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <p class="text-blue-600 font-black text-sm mb-3">${item.price.toLocaleString()}원</p>
-                                        <button onclick="addItem('${safeName}', '${series}', '${item.name.replace(/'/g, "\\'")}', ${item.price})" 
-                                                class="w-full py-2 bg-gray-900 text-white rounded-lg text-xs font-bold hover:bg-blue-600 transition">추가</button>
-                                    </div>
-                                </div>
-                            `;
+                                `;
+                            }
+                        });
+
+                        if (hasItems) {
+                            typeSection.innerHTML = `<h4 class="text-sm font-bold text-gray-400 mb-4 ml-1">${pType} 목록</h4>`;
+                            typeSection.appendChild(grid);
+                            seriesDiv.appendChild(typeSection);
                         }
                     });
-
-                    if (hasItems) {
-                        typeSection.appendChild(grid);
-                        seriesDiv.appendChild(typeSection);
-                    }
+                    
+                    container.appendChild(seriesDiv);
                 });
-                
-                container.appendChild(seriesDiv);
             });
-        });
-    }
+        }
+
+        // 4. 선택 및 계산 함수
         function addItem(id, cat, name, price) {
             const existIndex = selectedItems.findIndex(item => item.id === id);
             if (existIndex > -1) {
@@ -208,7 +205,6 @@ let selectedItems = [];
                 `).join('');
             }
 
-            // 합계 계산
             let subtotal = selectedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
             if (isAssembled && selectedItems.length > 0) subtotal += 100000;
 
@@ -216,41 +212,10 @@ let selectedItems = [];
             itemCount.innerText = `${selectedItems.length}종`;
         }
 
-        // 4. 모달 및 폼 제출
-        function openConsultModal() {
-            if (selectedItems.length === 0) return alert("부품을 먼저 선택해주세요.");
-            document.getElementById('modalTotalPrice').innerText = document.getElementById('totalDisplay').innerText;
-            document.getElementById('consultModal').classList.remove('hidden');
-            document.getElementById('consultModal').classList.add('flex');
-        }
-
-        function closeConsultModal() {
-            document.getElementById('consultModal').classList.remove('flex');
-            document.getElementById('consultModal').classList.add('hidden');
-        }
-
-        document.getElementById('consultForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const requestData = {
-                name: document.getElementById('userName').value,
-                phone: document.getElementById('userPhone').value,
-                memo: document.getElementById('userMemo').value,
-                items: selectedItems,
-                totalPrice: document.getElementById('totalDisplay').innerText,
-                type: "상담 신청",
-                timestamp: Date.now()
-            };
-
-            db.ref('requests').push(requestData, (error) => {
-                if (!error) {
-                    alert('견적 상담 신청이 완료되었습니다. 확인 후 연락드리겠습니다.');
-                    location.reload();
-                }
-            });
-        });
-
         // 초기 실행
-        window.onload = loadParts;
+        window.onload = function() {
+            loadParts();
+        };
     </script>
 </body>
 </html>
