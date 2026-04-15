@@ -38,26 +38,43 @@
         <div id="adminMain" class="hidden max-w-7xl mx-auto px-4 py-10">
             
             <section class="mb-20">
-                <h2 class="text-3xl font-black mb-8 text-blue-600">중고 판매 물품 등록</h2>
-                <div class="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm mb-10">
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <input type="text" id="usedName" placeholder="제품명 (예: RTX 3070 완본체)" class="border p-4 rounded-2xl text-sm outline-none">
-                        <input type="number" id="usedPrice" placeholder="판매 가격 (숫자만)" class="border p-4 rounded-2xl text-sm outline-none">
-                        <input type="text" id="usedImage" placeholder="이미지 URL" class="border p-4 rounded-2xl text-sm outline-none">
-                        <button onclick="addUsedItem()" class="bg-blue-600 text-white py-4 rounded-2xl font-black hover:bg-blue-700 transition">물품 진열하기</button>
-                    </div>
-                    <p class="text-xs text-gray-400 mt-4">* 이미지 URL이 없으면 기본 이미지가 사용됩니다.</p>
-                </div>
-                
-                <div id="usedAdminList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-            </section>
-
-            <section class="mb-20 border-t pt-20">
                 <div class="flex justify-between items-end mb-8">
                     <h2 class="text-3xl font-black">고객 상담/구매 신청</h2>
                     <span class="text-sm font-bold text-blue-600 bg-blue-50 px-4 py-2 rounded-full" id="totalCount">접수 0건</span>
                 </div>
-                <div id="requestList" class="grid gap-6"></div>
+                <div id="requestList" class="grid gap-6">
+                    </div>
+            </section>
+
+            <section class="mb-20 border-t pt-20">
+                <h2 class="text-3xl font-black mb-8 text-blue-600">중고 판매 물품 관리</h2>
+                <div class="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm mb-10">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <input type="text" id="usedName" placeholder="제품명" class="border p-4 rounded-2xl text-sm outline-none">
+                        <input type="number" id="usedPrice" placeholder="판매 가격" class="border p-4 rounded-2xl text-sm outline-none">
+                        <input type="text" id="usedImage" placeholder="이미지 URL" class="border p-4 rounded-2xl text-sm outline-none">
+                        <button onclick="addUsedItem()" class="bg-blue-600 text-white py-4 rounded-2xl font-black hover:bg-blue-700">물품 등록</button>
+                    </div>
+                </div>
+                <div id="usedAdminList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+            </section>
+
+            <section class="border-t pt-20 pb-20">
+                <h2 class="text-3xl font-black mb-8">자료실 파일 관리</h2>
+                <div class="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm mb-10">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <select id="arcCat" class="border p-4 rounded-2xl text-sm outline-none">
+                            <option value="드라이버">드라이버</option>
+                            <option value="매뉴얼">매뉴얼</option>
+                            <option value="BIOS">BIOS</option>
+                        </select>
+                        <input type="text" id="arcTitle" placeholder="자료 제목" class="border p-4 rounded-2xl text-sm outline-none">
+                        <input type="text" id="arcLink" placeholder="다운로드 링크" class="border p-4 rounded-2xl text-sm outline-none">
+                        <button onclick="uploadArchive()" class="bg-gray-900 text-white py-4 rounded-2xl font-black hover:bg-blue-600 transition">자료 등록</button>
+                    </div>
+                </div>
+                <div id="archiveAdminList" class="grid gap-3">
+                    </div>
             </section>
         </div>
     </main>
@@ -78,71 +95,65 @@
             document.getElementById('loginSection').classList.add('hidden');
             document.getElementById('adminMain').classList.remove('hidden');
             document.getElementById('logoutBtn').classList.remove('hidden');
-            loadUsedAdmin();
             loadRequests();
+            loadUsedAdmin();
+            loadArchiveAdmin();
         }
 
-        // 중고 물품 등록
-        function addUsedItem() {
-            const name = document.getElementById('usedName').value;
-            const price = document.getElementById('usedPrice').value;
-            const image = document.getElementById('usedImage').value || 'https://via.placeholder.com/400x300?text=No+Image';
-            
-            if(!name || !price) return alert("이름과 가격은 필수입니다.");
-
-            db.ref('used_items').push({
-                name, price: parseInt(price), image, timestamp: Date.now()
-            }).then(() => {
-                alert("중고 상품이 등록되었습니다.");
-                document.getElementById('usedName').value = '';
-                document.getElementById('usedPrice').value = '';
-                document.getElementById('usedImage').value = '';
-            });
-        }
-
-        // 등록된 중고 물품 관리
-        function loadUsedAdmin() {
-            db.ref('used_items').on('value', (snapshot) => {
-                const data = snapshot.val();
-                const list = document.getElementById('usedAdminList');
-                if(!data) { list.innerHTML = '<p class="text-gray-400">등록된 상품이 없습니다.</p>'; return; }
-
-                list.innerHTML = Object.keys(data).reverse().map(key => `
-                    <div class="bg-white p-4 rounded-2xl border border-gray-100 flex items-center gap-4">
-                        <img src="${data[key].image}" class="w-16 h-16 object-cover rounded-xl">
-                        <div class="flex-1">
-                            <p class="font-bold text-sm text-gray-800">${data[key].name}</p>
-                            <p class="text-blue-600 font-black text-sm">${data[key].price.toLocaleString()}원</p>
-                        </div>
-                        <button onclick="deleteData('used_items', '${key}')" class="text-xs text-red-400 hover:underline">삭제</button>
-                    </div>
-                `).join('');
-            });
-        }
-
-        // 고객 상담 내역 로드
+        // 1. 상담 내역 로드 (물품 리스트 안보이는 문제 해결)
         function loadRequests() {
+            const listContainer = document.getElementById('requestList');
             db.ref('requests').on('value', (snapshot) => {
                 const data = snapshot.val();
-                const list = document.getElementById('requestList');
-                if(!data) { list.innerHTML = '<p class="text-gray-400 text-center py-10">내역 없음</p>'; return; }
+                if (!data) {
+                    listContainer.innerHTML = '<p class="text-gray-400 text-center py-20">상담 신청 내역이 없습니다.</p>';
+                    return;
+                }
 
                 const keys = Object.keys(data).reverse();
                 document.getElementById('totalCount').innerText = `접수 ${keys.length}건`;
 
-                list.innerHTML = keys.map(key => {
+                listContainer.innerHTML = keys.map(key => {
                     const req = data[key];
                     const isUsed = req.type === "중고 구매 신청";
+                    const themeColor = isUsed ? "orange" : "blue";
+
+                    // 리스트 렌더링 로직 보완
+                    let itemsHtml = "";
+                    if (!isUsed && req.items) {
+                        // 실시간 견적 부품 리스트
+                        itemsHtml = req.items.map(item => `
+                            <div class="flex justify-between py-1 border-b border-gray-50 text-xs">
+                                <span class="text-gray-600">${item.name} x ${item.quantity}</span>
+                                <span class="font-bold">${(item.price * item.quantity).toLocaleString()}원</span>
+                            </div>
+                        `).join('');
+                    } else if (isUsed) {
+                        // 중고 구매 신청 상품
+                        itemsHtml = `<p class="text-sm font-bold text-orange-600">신청 상품: ${req.appliedItem || '정보 없음'}</p>`;
+                    } else {
+                        itemsHtml = `<p class="text-xs text-gray-400">상세 품목 데이터가 없습니다.</p>`;
+                    }
+
                     return `
                         <div class="bg-white rounded-3xl border border-gray-100 p-6 flex flex-col md:flex-row gap-6 shadow-sm">
                             <div class="flex-1">
-                                <span class="text-[10px] ${isUsed ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'} px-2 py-1 rounded font-bold mb-2 inline-block">${isUsed ? '중고구매' : '신조립견적'}</span>
-                                <h3 class="font-black text-lg">${req.name} (${req.phone})</h3>
-                                <p class="text-sm text-gray-500 mt-2">요청내용: ${isUsed ? req.appliedItem : (req.memo || '없음')}</p>
+                                <div class="flex items-center gap-3 mb-3">
+                                    <span class="text-[10px] bg-${themeColor}-100 text-${themeColor}-600 px-2 py-1 rounded font-bold uppercase">${isUsed ? '중고구매' : '신조립견적'}</span>
+                                    <span class="text-[10px] text-gray-400">${new Date(req.timestamp).toLocaleString()}</span>
+                                </div>
+                                <h3 class="font-black text-lg mb-1">${req.name}</h3>
+                                <a href="tel:${req.phone}" class="text-sm text-blue-500 font-bold underline mb-4 inline-block">${req.phone}</a>
+                                <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100">
+                                    <p class="text-[10px] font-bold text-gray-400 mb-2">상세 내역</p>
+                                    ${itemsHtml}
+                                    ${req.memo ? `<p class="mt-3 pt-3 border-t border-gray-200 text-sm text-gray-500">메모: ${req.memo}</p>` : ''}
+                                </div>
                             </div>
-                            <div class="md:w-48 text-right flex flex-col justify-center">
-                                <p class="text-xl font-black ${isUsed ? 'text-orange-600' : 'text-blue-600'}">${isUsed ? req.expectedPrice.toLocaleString() + '원' : req.totalPrice}</p>
-                                <button onclick="deleteData('requests', '${key}')" class="text-xs text-red-300 underline mt-2">내역 삭제</button>
+                            <div class="md:w-48 flex flex-col justify-center items-end border-t md:border-t-0 md:border-l md:pl-6 pt-4 md:pt-0">
+                                <p class="text-[10px] text-gray-400 mb-1">최종 금액</p>
+                                <p class="text-xl font-black text-${themeColor}-600">${isUsed ? (req.expectedPrice ? req.expectedPrice.toLocaleString()+'원' : '상담필요') : (req.totalPrice || '0원')}</p>
+                                <button onclick="deleteData('requests', '${key}')" class="text-xs text-red-300 hover:text-red-500 underline mt-4">삭제</button>
                             </div>
                         </div>
                     `;
@@ -150,8 +161,60 @@
             });
         }
 
+        // 2. 중고 물품 관리
+        function addUsedItem() {
+            const name = document.getElementById('usedName').value;
+            const price = document.getElementById('usedPrice').value;
+            const image = document.getElementById('usedImage').value || 'https://via.placeholder.com/400';
+            if(!name || !price) return alert("이름과 가격을 입력하세요.");
+            db.ref('used_items').push({ name, price: parseInt(price), image, timestamp: Date.now() })
+              .then(() => { alert("등록 완료"); location.reload(); });
+        }
+
+        function loadUsedAdmin() {
+            db.ref('used_items').on('value', (snapshot) => {
+                const data = snapshot.val();
+                const list = document.getElementById('usedAdminList');
+                if(!data) return;
+                list.innerHTML = Object.keys(data).reverse().map(key => `
+                    <div class="bg-white p-4 rounded-2xl border border-gray-100 flex items-center gap-4">
+                        <img src="${data[key].image}" class="w-12 h-12 object-cover rounded-lg">
+                        <div class="flex-1"><p class="font-bold text-xs">${data[key].name}</p></div>
+                        <button onclick="deleteData('used_items', '${key}')" class="text-xs text-red-400">삭제</button>
+                    </div>
+                `).join('');
+            });
+        }
+
+        // 3. 자료실 관리 (복구됨)
+        function uploadArchive() {
+            const category = document.getElementById('arcCat').value;
+            const title = document.getElementById('arcTitle').value;
+            const link = document.getElementById('arcLink').value;
+            if(!title || !link) return alert("내용을 입력하세요.");
+            db.ref('archives').push({ category, title, link, date: new Date().toISOString().split('T')[0] })
+              .then(() => { alert("자료 등록 완료"); });
+        }
+
+        function loadArchiveAdmin() {
+            db.ref('archives').on('value', (snapshot) => {
+                const data = snapshot.val();
+                const list = document.getElementById('archiveAdminList');
+                if(!data) { list.innerHTML = ''; return; }
+                list.innerHTML = Object.keys(data).reverse().map(key => `
+                    <div class="flex justify-between items-center bg-white p-4 rounded-2xl border border-gray-100">
+                        <div class="flex items-center gap-4">
+                            <span class="text-[10px] font-bold px-2 py-1 bg-gray-100 rounded">${data[key].category}</span>
+                            <span class="text-sm font-bold text-gray-700">${data[key].title}</span>
+                        </div>
+                        <button onclick="deleteData('archives', '${key}')" class="text-xs text-red-400 hover:underline">삭제</button>
+                    </div>
+                `).join('');
+            });
+        }
+
         function deleteData(node, key) {
-            if(confirm('정말 삭제하시겠습니까?')) db.ref(node).child(key).remove();
+            if(confirm('삭제하시겠습니까?')) db.ref(node).child(key).remove();
         }
 
         function logout() { sessionStorage.removeItem("adminLoggedIn"); location.reload(); }
