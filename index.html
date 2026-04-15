@@ -8,9 +8,56 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
+        
+        /* === 계절별 custom CSS 애니메이션 정의 === */
+
+        /* 1. 봄: 꽃가루 휘날리기 */
+        @keyframes petalFall {
+            0% { opacity: 0; transform: translateY(-10px) rotate(0deg); }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { opacity: 0; transform: translateY(100vh) rotate(720deg); }
+        }
+        .petal {
+            position: absolute; background-color: #ffb7c5; /* 분홍색 꽃잎 */
+            border-radius: 50% 0 50% 50%; opacity: 0;
+            animation: petalFall 10s linear infinite; pointer-events: none;
+        }
+
+        /* 2. 여름: 태양 이글거리기 (배경 블러/색상 변동) */
+        @keyframes summerHeat {
+            0%, 100% { filter: saturate(1.1) brightness(1); }
+            50% { filter: saturate(1.3) brightness(1.1); }
+        }
+        .summer-effect { animation: summerHeat 4s ease-in-out infinite; }
+
+        /* 3. 가을: 낙엽 떨어지기 */
+        @keyframes leafFall {
+            0% { opacity: 0; transform: translateY(-10px) rotate(0deg) translateX(0px); }
+            10% { opacity: 1; }
+            100% { opacity: 0; transform: translateY(100vh) rotate(360deg) translateX(50px); }
+        }
+        .leaf {
+            position: absolute; background-color: #d35400; /* 주황색 낙엽 */
+            border-radius: 5px; opacity: 0;
+            animation: leafFall 8s linear infinite; pointer-events: none;
+        }
+
+        /* 4. 겨울: 눈 내리기 */
+        @keyframes snowFall {
+            0% { opacity: 0; transform: translateY(-10px); }
+            10% { opacity: 1; }
+            100% { opacity: 0; transform: translateY(100vh); }
+        }
+        .snow {
+            position: absolute; background-color: #fff; /* 흰색 눈 */
+            border-radius: 50%; opacity: 0;
+            animation: snowFall 5s linear infinite; pointer-events: none;
+        }
+
     </style>
 </head>
-<body class="bg-gray-50 text-gray-900">
+<body class="bg-gray-50 text-gray-900 overflow-x-hidden">
 
     <nav class="sticky top-0 z-50 bg-white border-b border-gray-100">
         <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
@@ -24,12 +71,16 @@
                     <a href="admin-list.html" class="hover:text-blue-600">관리자</a>
                 </div>
             </div>
-            </div>
+        </div>
     </nav>
 
-    <header class="relative bg-white pt-20 pb-32 overflow-hidden">
-        <div class="max-w-7xl mx-auto px-4 relative z-10">
-            <div class="max-w-3xl">
+    <header id="seasonHeader" class="relative pt-20 pb-32 overflow-hidden min-h-[80vh] flex items-center bg-cover bg-center transition-all duration-1000">
+        
+        <div id="seasonEffectLayer" class="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+            </div>
+
+        <div class="max-w-7xl mx-auto px-4 relative z-10 w-full text-center md:text-left">
+            <div class="max-w-3xl bg-white/60 p-10 rounded-3xl backdrop-blur-sm border border-white/20">
                 <div class="inline-flex items-center gap-2 bg-blue-50 text-blue-600 px-4 py-2 rounded-full text-sm font-bold mb-6">
                     <span class="relative flex h-2 w-2">
                         <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
@@ -37,43 +88,108 @@
                     </span>
                     실시간 가격 자동 업데이트 시스템 가동 중
                 </div>
-                <h1 class="text-6xl md:text-8xl font-black leading-tight tracking-tighter mb-8">
+                <h1 class="text-6xl md:text-8xl font-black leading-tight tracking-tighter mb-8 break-keep">
                     Smart PC<br><span class="text-blue-600">Solution.</span>
                 </h1>
-                <p class="text-xl text-gray-500 font-medium leading-relaxed mb-10">
+                <p class="text-xl text-gray-500 font-medium leading-relaxed mb-10 break-keep">
                     복잡한 견적부터 중고 매입까지 한 번에.<br>
                     가장 투명한 가격으로 당신의 PC를 완성하세요.
                 </p>
-                <div class="flex flex-wrap gap-4">
-                    <a href="estimate.html" class="px-10 py-5 bg-gray-900 text-white rounded-2xl font-black text-lg hover:bg-blue-600 transition-all shadow-xl shadow-gray-200">
+                <div class="flex flex-wrap gap-4 justify-center md:justify-start">
+                    <a href="estimate.html" class="px-10 py-5 bg-gray-900 text-white rounded-2xl font-black text-lg hover:bg-blue-600 transition-all shadow-xl shadow-gray-200 hover:-translate-y-1">
                         지금 견적 시작하기
                     </a>
                 </div>
             </div>
         </div>
-        <div class="absolute right-0 top-0 w-1/2 h-full bg-gradient-to-l from-blue-50/50 to-transparent hidden lg:block"></div>
     </header>
 
     <footer class="bg-white border-t border-gray-100 pt-20 pb-10">
-        <div class="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-12">
-            <div>
-                <a href="#" class="text-2xl font-black text-blue-600 mb-6 block">COMPATCH</a>
-                <p class="text-sm text-gray-400 leading-relaxed mb-6">
-                    (Compatch Dot Com) | 대표자: 이성호<br>
-                    사업자등록번호: 000-00-00000 | 통신판매업: 제2026-서울강남-0000호<br>
-                    주소: 서울특별시 강남구 어딘가 렉스김 빌딩 4층
-                </p>
-            </div>
-            <div class="flex flex-col justify-end items-end">
-                <p class="text-sm text-gray-400">문의: help@compatch.com</p>
-            </div>
-        </div>
-        <div class="max-w-7xl mx-auto mt-10 pt-8 border-t border-gray-200 text-center text-xs text-gray-400">
-            © 2026 Compatch Dot Com. All Rights Reserved.
-        </div>
-    </footer>
+        </footer>
 
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+
+    <script>
+        // === 사계절 자동 변경 자바스크립트 로직 ===
+
+        function setSeasonParams() {
+            const now = new Date();
+            const month = now.getMonth() + 1; // 0~11월이므로 +1 (1~12월)
+            // const month = 4; // 테스트용 (원하는 월로 설정하여 확인 가능)
+
+            const header = document.getElementById('seasonHeader');
+            const effectLayer = document.getElementById('seasonEffectLayer');
+            
+            let seasonClass = '';
+            let bgUrl = '';
+            let effectType = '';
+            let effectCount = 0;
+
+            if (month >= 3 && month <= 5) {
+                // 봄 (3월~5월)
+                seasonClass = 'spring';
+                bgUrl = 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?q=80&w=1920&auto=format&fit=crop'; // 꽃이 핀 들판
+                effectType = 'petal';
+                effectCount = 30; // 꽃잎 개수
+            } else if (month >= 6 && month <= 8) {
+                // 여름 (6월~8월)
+                seasonClass = 'summer';
+                bgUrl = 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1920&auto=format&fit=crop'; // 여름 해변
+                effectType = 'summer-heat'; // 전신 효과
+            } else if (month >= 9 && month <= 11) {
+                // 가을 (9월~11월)
+                seasonClass = 'autumn';
+                bgUrl = 'https://images.unsplash.com/photo-1503718134758-a141914aee92?q=80&w=1920&auto=format&fit=crop'; // 가을 들판
+                effectType = 'leaf';
+                effectCount = 20; // 낙엽 개수
+            } else {
+                // 겨울 (12월~2월)
+                seasonClass = 'winter';
+                bgUrl = 'https://images.unsplash.com/photo-1418985991508-e473b644948a?q=80&w=1920&auto=format&fit=crop'; // 눈 쌓인 겨울 들판
+                effectType = 'snow';
+                effectCount = 50; // 눈송이 개수
+            }
+
+            // 1. 배경 이미지 및 클래스 적용
+            header.style.backgroundImage = `url('${bgUrl}')`;
+            header.classList.add(seasonClass);
+            if (effectType === 'summer-heat') {
+                header.classList.add('summer-effect'); // 여름 전용 이글거림 효과
+            }
+
+            // 2. 애니메이션 효과 요소 생성 (꽃가루, 낙엽, 눈)
+            if (effectCount > 0) {
+                for (let i = 0; i < effectCount; i++) {
+                    const element = document.createElement('div');
+                    element.classList.add(effectType);
+                    
+                    // 랜덤 위치 및 속도 설정
+                    element.style.left = Math.random() * 100 + 'vw'; // 가로 위치 랜덤
+                    element.style.animationDelay = Math.random() * 10 + 's'; // 지연 시간 랜덤
+                    element.style.animationDuration = (Math.random() * 5 + 5) + 's'; // 떨어지는 속도 랜덤 (5~10초)
+                    
+                    // 크기 랜덤 설정 (꽃가루, 낙엽, 눈에 따라 다르게)
+                    let size = '';
+                    if (effectType === 'petal') size = (Math.random() * 10 + 5) + 'px';
+                    else if (effectType === 'leaf') size = (Math.random() * 15 + 10) + 'px';
+                    else if (effectType === 'snow') size = (Math.random() * 5 + 2) + 'px';
+                    element.style.width = size;
+                    element.style.height = size;
+                    
+                    // 가을 낙엽 랜덤 색상 (주황, 갈색, 노랑)
+                    if (effectType === 'leaf') {
+                        const colors = ['#d35400', '#e67e22', '#f39c12'];
+                        element.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    }
+
+                    effectLayer.appendChild(element);
+                }
+            }
+        }
+
+        // 페이지 로드 시 사계절 파라미터 설정 실행
+        window.onload = setSeasonParams;
+    </script>
 </body>
 </html>
