@@ -62,6 +62,20 @@
             </div>
         </section>
 
+<section class="border-t pt-20 mb-20">
+    <h2 class="text-3xl font-black mb-8">중고 매입 DB 관리</h2>
+    <div class="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm mb-10">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <input type="text" id="usedName" placeholder="제품명 (예: RTX 3060)" class="border p-4 rounded-2xl text-sm">
+            <input type="number" id="usedPrice" placeholder="예상 매입가 (숫자만)" class="border p-4 rounded-2xl text-sm">
+            <input type="text" id="usedImage" placeholder="이미지 URL" class="border p-4 rounded-2xl text-sm">
+            <button onclick="addUsedItem()" class="bg-blue-600 text-white py-4 rounded-2xl font-black hover:bg-blue-700 transition">품목 등록</button>
+        </div>
+    </div>
+    <div id="usedAdminList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        </div>
+</section>
+
     </main>
 
     <div id="loginModal" class="fixed inset-0 bg-gray-900/90 z-[100] hidden items-center justify-center p-4 backdrop-blur-md">
@@ -187,6 +201,24 @@
                 `).join('');
             });
         }
+
+// 중고 품목 등록 함수
+function addUsedItem() {
+    const name = document.getElementById('usedName').value;
+    const price = document.getElementById('usedPrice').value;
+    const image = document.getElementById('usedImage').value;
+    
+    if(!name || !price) return alert("제품명과 가격을 입력하세요.");
+
+    db.ref('used_db').push({
+        name, 
+        price: parseInt(price), 
+        image: image || 'https://via.placeholder.com/150'
+    }).then(() => {
+        alert("중고 매입 품목이 등록되었습니다.");
+        location.reload();
+    });
+}
 
         // 공통 기능: 삭제, 로그인 등
         function checkAdmin() {
