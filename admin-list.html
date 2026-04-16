@@ -344,13 +344,13 @@ function savePartItem() {
     const partData = { category, name, price, stock, image, desc, timestamp: Date.now() };
 
     if (editingPartKey) {
-        // [수정 모드] 기존 키 위치에 업데이트 (중복 방지)
+        // [수정 모드] 기존 키(key)를 사용하여 데이터 덮어쓰기 (중복 방지 핵심)
         db.ref('parts_db').child(editingPartKey).update(partData).then(() => {
             alert("부품 정보가 수정되었습니다.");
             resetPartForm();
         });
     } else {
-        // [신규 등록 모드] 새로운 키 생성
+        // [신규 등록 모드] push()를 사용하여 새로운 데이터 생성
         db.ref('parts_db').push(partData).then(() => {
             alert("새 부품이 등록되었습니다.");
             resetPartForm();
@@ -358,10 +358,10 @@ function savePartItem() {
     }
 }
 
-// 2. 수정 버튼 클릭 시 폼에 데이터 채우기
+// 2. 수정 버튼 클릭 시 입력창에 데이터 채우기
 function editPart(key, dataJson) {
     const data = JSON.parse(decodeURIComponent(dataJson));
-    editingPartKey = key; // 현재 수정 중인 키 설정
+    editingPartKey = key; // 현재 수정 중인 고유 키 저장
     
     document.getElementById('partCategory').value = data.category;
     document.getElementById('partName').value = data.name;
@@ -370,14 +370,14 @@ function editPart(key, dataJson) {
     document.getElementById('partImage').value = data.image || '';
     document.getElementById('partDesc').value = data.desc || '';
     
-    // 버튼 UI 변경
+    // 버튼 UI를 수정 모드에 맞게 변경
     const btn = document.querySelector("button[onclick='savePartItem()']");
     btn.innerText = "부품 정보 수정 완료 (Update)";
     btn.className = "w-full bg-green-600 text-white py-4 rounded-2xl font-black shadow-lg hover:bg-green-700 transition-all";
-    window.scrollTo({top: 0, behavior: 'smooth'});
+    window.scrollTo({top: 0, behavior: 'smooth'}); // 화면을 입력창으로 이동
 }
 
-// 3. 폼 초기화
+// 3. 입력폼 초기화 함수
 function resetPartForm() {
     editingPartKey = null;
     document.getElementById('partName').value = '';
@@ -391,14 +391,17 @@ function resetPartForm() {
     btn.className = "w-full bg-blue-600 text-white py-4 rounded-2xl font-black hover:bg-blue-700 transition-all";
 }
 
-// 4. 관리자용 리스트 출력 (수정/삭제 버튼 포함)
+// 4. 관리자 페이지에 등록된 부품 리스트 출력
 function loadPartsAdmin() {
     const list = document.getElementById('adminPartList');
     if(!list) return;
 
     db.ref('parts_db').on('value', (snapshot) => {
         const data = snapshot.val();
-        if(!data) { list.innerHTML = '<p class="text-center text-gray-400 py-10">등록된 부품이 없습니다.</p>'; return; }
+        if(!data) { 
+            list.innerHTML = '<p class="text-center text-gray-400 py-10">등록된 부품이 없습니다.</p>'; 
+            return; 
+        }
 
         list.innerHTML = Object.keys(data).reverse().map(key => {
             const item = data[key];
@@ -410,12 +413,12 @@ function loadPartsAdmin() {
                         <div>
                             <p class="text-[10px] font-bold text-blue-600">${item.category}</p>
                             <p class="font-bold text-gray-800">${item.name}</p>
-                            <p class="text-xs text-gray-400">${item.price.toLocaleString()}원</p>
+                            <p class="text-xs text-gray-400">${Number(item.price).toLocaleString()}원</p>
                         </div>
                     </div>
                     <div class="flex gap-2">
-                        <button onclick="editPart('${key}', '${dataJson}')" class="px-4 py-2 bg-gray-100 text-gray-600 rounded-xl text-xs font-bold hover:bg-gray-200">수정</button>
-                        <button onclick="deleteData('parts_db', '${key}')" class="px-4 py-2 bg-red-50 text-red-500 rounded-xl text-xs font-bold hover:bg-red-100">삭제</button>
+                        <button onclick="editPart('${key}', '${dataJson}')" class="px-4 py-2 bg-gray-100 text-gray-600 rounded-xl text-xs font-bold hover:bg-gray-200 transition-all">수정</button>
+                        <button onclick="deleteData('parts_db', '${key}')" class="px-4 py-2 bg-red-50 text-red-500 rounded-xl text-xs font-bold hover:bg-red-100 transition-all">삭제</button>
                     </div>
                 </div>
             `;

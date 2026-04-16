@@ -124,18 +124,18 @@
 function loadParts() {
     const container = document.getElementById('parts-container');
     
-    // "불러오는 중" 메시지 표시
-    container.innerHTML = '<div class="col-span-full text-center py-20 text-gray-400">부품 정보를 불러오고 있습니다...</div>';
+    // 로딩 메시지
+    container.innerHTML = '<div class="col-span-full text-center py-20 text-gray-400 font-bold">부품 데이터를 동기화 중입니다...</div>';
 
-    // Firebase parts_db 참조
+    // Firebase DB 실시간 연결
     db.ref('parts_db').on('value', (snapshot) => {
         const data = snapshot.val();
         
         if (!data) {
             container.innerHTML = `
-                <div class="col-span-full text-center py-20 bg-white rounded-[40px] border border-dashed border-gray-200">
-                    <p class="text-gray-400 font-bold text-lg">등록된 부품이 없습니다.</p>
-                    <p class="text-sm text-gray-300 mt-2">관리자 페이지에서 부품을 먼저 등록해주세요.</p>
+                <div class="col-span-full text-center py-20 bg-white rounded-[40px] border-2 border-dashed border-gray-100">
+                    <p class="text-gray-400 font-bold text-lg">DB에 등록된 부품이 없습니다.</p>
+                    <p class="text-sm text-gray-300 mt-2">관리자 페이지에서 부품을 먼저 등록해 주세요.</p>
                 </div>`;
             return;
         }
@@ -149,7 +149,7 @@ function loadParts() {
 
             return `
                 <div class="mb-12 col-span-full">
-                    <h3 class="text-xl font-black mb-6 flex items-center gap-2">
+                    <h3 class="text-xl font-black mb-6 flex items-center gap-2 uppercase tracking-tighter">
                         <span class="w-1.5 h-6 bg-blue-600 rounded-full"></span> ${cat}
                     </h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -158,12 +158,12 @@ function loadParts() {
                                  class="bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm hover:border-blue-500 hover:shadow-md transition-all cursor-pointer group">
                                 <div class="flex items-center gap-5">
                                     <div class="w-20 h-20 bg-gray-50 rounded-2xl overflow-hidden flex-shrink-0">
-                                        <img src="${item.image || 'https://via.placeholder.com/150'}" class="w-full h-full object-cover">
+                                        <img src="${item.image || 'https://via.placeholder.com/150'}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
                                     </div>
                                     <div class="flex-1 min-w-0">
                                         <h4 class="font-bold text-gray-800 text-lg truncate">${item.name}</h4>
                                         <p class="text-blue-600 font-black text-xl mt-1">${Number(item.price).toLocaleString()}원</p>
-                                        <p class="text-[11px] text-gray-400 mt-1 line-clamp-1">${item.desc || ''}</p>
+                                        <p class="text-[11px] text-gray-400 mt-1 line-clamp-1">${item.desc || '상세설명 없음'}</p>
                                     </div>
                                 </div>
                             </div>
@@ -174,11 +174,6 @@ function loadParts() {
         }).join('');
     });
 }
-
-// 윈도우 로드 시 호출
-window.onload = () => {
-    loadParts();
-};
 
         function selectPart(category, name, price) {
             if (selectedItems[category] && selectedItems[category].name === name) {
