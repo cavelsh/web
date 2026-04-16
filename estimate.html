@@ -155,7 +155,7 @@
     // [수정] 화면 데이터 로드 함수
     function loadParts() {
         // HTML의 ID인 partsContainer를 가져옴 (또는 HTML의 ID를 parts-container로 변경)
-        const container = document.getElementById('partsContainer');
+        const container = document.getElementById('parts-Container');
         if(!container) return;
 
         db.ref('parts_db').on('value', (snapshot) => {
