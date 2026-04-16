@@ -321,13 +321,16 @@ function addPartItem() {
         price, 
         stock, 
         image, 
-        description, // 'desc'에서 'description'으로 변경
+        description, 
         timestamp: Date.now()
     }).then(() => {
         alert("부품이 DB에 등록되었습니다.");
         // 초기화 로직...
-        document.getElementById('partDesc').value = '';
-    });
+        document.getElementById('partName').value = '';
+        document.getElementById('partPrice').value = '';
+        document.getElementById('partStock').value = '';
+        document.getElementById('partImage').value = '';
+        document.getElementById('partDesc').value = '';    });
 }
 let editingPartKey = null; // 수정 중인 부품의 ID 저장용
 
@@ -352,9 +355,14 @@ const partData = {
         timestamp: Date.now() 
     };
 
-    if (editingPartKey) {
+if (editingPartKey) {
         db.ref('parts_db').child(editingPartKey).update(partData).then(() => {
             alert("부품 정보가 수정되었습니다.");
+            resetPartForm();
+        });
+    } else {
+        db.ref('parts_db').push(partData).then(() => {
+            alert("새 부품이 등록되었습니다.");
             resetPartForm();
         });
     }
