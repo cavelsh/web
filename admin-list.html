@@ -107,45 +107,34 @@
             </div>
     </div>
 </section>
-<section id="sec-parts" class="tab-content hidden">
-        <h2 class="text-2xl font-black mb-6">견적 부품 DB 관리</h2>
-        
-        <div class="bg-white rounded-[32px] p-8 shadow-sm border border-gray-100 mb-10">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">카테고리</label>
-                    <select id="partCategory" class="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 focus:ring-2 focus:ring-blue-500 font-bold">
-                        <option>CPU</option><option>메인보드</option><option>메모리</option><option>그래픽카드</option>
-                        <option>SSD/HDD</option><option>케이스</option><option>파워</option><option>쿨러</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">부품명</label>
-                    <input type="text" id="partName" class="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 focus:ring-2 focus:ring-blue-500 font-bold">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">판매 가격</label>
-                    <input type="number" id="partPrice" class="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 focus:ring-2 focus:ring-blue-500 font-bold">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">이미지 URL</label>
-                    <input type="text" id="partImage" class="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 focus:ring-2 focus:ring-blue-500 font-bold">
-                </div>
-                <div class="md:col-span-2">
-                    <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">상세 사양 및 설명 (모두 표시됩니다)</label>
-                    <textarea id="partDesc" rows="6" class="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 focus:ring-2 focus:ring-blue-500 font-medium resize-none leading-relaxed" placeholder="부품의 상세한 스펙을 입력해 주세요."></textarea>
-                </div>
-            </div>
-            <div class="mt-8 flex flex-col gap-3">
-                <button id="submitBtn" onclick="savePartItem()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black hover:bg-blue-700 transition-all shadow-lg">
-                    부품 데이터 등록
-                </button>
-                <button id="cancelBtn" onclick="resetPartForm()" class="hidden w-full bg-gray-100 text-gray-500 py-3 rounded-2xl font-bold">수정 취소</button>
-            </div>
+<section class="mt-12">
+    <h2 class="text-2xl font-black mb-6 flex items-center gap-2">
+        <span class="w-2 h-8 bg-blue-600 rounded-full"></span> 견적 부품 DB 관리
+    </h2>
+    <div class="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+            <select id="partCategory" class="px-5 py-4 bg-gray-50 border-none rounded-2xl outline-none text-sm font-bold">
+                <option value="CPU">CPU</option>
+                <option value="메인보드">메인보드</option>
+                <option value="메모리">메모리</option>
+                <option value="그래픽카드">그래픽카드</option>
+                <option value="SSD/HDD">SSD/HDD</option>
+                <option value="케이스">케이스</option>
+                <option value="파워">파워</option>
+                <option value="쿨러">쿨러</option>
+            </select>
+            <input type="text" id="partName" placeholder="부품명 (예: Intel i7 14700)" class="px-5 py-4 bg-gray-50 border-none rounded-2xl outline-none text-sm">
+            <input type="number" id="partPrice" placeholder="단가 (숫자만)" class="px-5 py-4 bg-gray-50 border-none rounded-2xl outline-none text-sm">
+            <input type="number" id="partStock" placeholder="재고 수량" class="px-5 py-4 bg-gray-50 border-none rounded-2xl outline-none text-sm">
+            <input type="text" id="partImage" placeholder="이미지 URL" class="px-5 py-4 bg-gray-50 border-none rounded-2xl outline-none text-sm">
+            <input type="text" id="partDesc" placeholder="상세 설명 (짧게)" class="px-5 py-4 bg-gray-50 border-none rounded-2xl outline-none text-sm">
         </div>
+        <button onclick="addPartItem()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black hover:bg-blue-700 transition-all">부품 데이터 등록</button>
+        
+        <div id="adminPartsList" class="mt-8 space-y-2 max-h-[400px] overflow-y-auto no-scrollbar"></div>
+    </div>
+</section>
 
-        <div id="adminPartsList" class="space-y-3"></div>
-    </section>
     </main>
 
     <div id="loginModal" class="fixed inset-0 bg-gray-900/90 z-[100] hidden items-center justify-center p-4 backdrop-blur-md">
@@ -160,6 +149,8 @@
         const firebaseConfig = { databaseURL: "https://compatch-e7305-default-rtdb.asia-southeast1.firebasedatabase.app/" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
+
+let editingPartKey = null;
 
         // [복구] 1. 고객 견적/판매 신청 내역 로드 및 상세 부품 표시
         function loadRequests() {
@@ -272,7 +263,6 @@
             });
         }
 
-let editingPartKey = null;
 
 // 중고 품목 등록 함수
 function addUsedItem() {
