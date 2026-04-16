@@ -31,7 +31,7 @@
 
     <main class="max-w-7xl mx-auto px-4 py-10">
         <div class="flex flex-col lg:flex-row gap-8">
-            <div class="flex-1 space-y-6" id="partsContainer">
+            <div class="flex-1 space-y-6" id="parts-Container">
                 <div class="text-center py-20 text-gray-400">상품 정보를 불러오는 중입니다...</div>
             </div>
 
@@ -110,98 +110,126 @@
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
 
-    <script>
-        const firebaseConfig = { 
-            databaseURL: "https://compatch-e7305-default-rtdb.asia-southeast1.firebasedatabase.app/" 
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+<script>
+    const firebaseConfig = { 
+        databaseURL: "https://compatch-e7305-default-rtdb.asia-southeast1.firebasedatabase.app/" 
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-        let selectedItems = {};
-        const ASSEMBLY_FEE = 100000; // 조립비 고정값
+    let selectedItems = {};
+    const ASSEMBLY_FEE = 100000;
 
-// 조립 옵션 클릭 시 체크박스 토글
-function toggleAssembly() {
-    const check = document.getElementById('assemblyCheck');
-    check.checked = !check.checked;
-    updateSummary();
-}
-
-function loadParts() {
-    // ID를 'parts-container'로 맞춤
-    const container = document.getElementById('parts-container');
-    if(!container) return;
-
-    db.ref('parts_db').on('value', (snapshot) => {
-        const data = snapshot.val();
-        if (!data) {
-            container.innerHTML = `<div class="col-span-full text-center py-20 bg-white rounded-[40px] border-2 border-dashed border-gray-100">등록된 부품이 없습니다.</div>`;
-            return;
+    // [수정] 조립 옵션 토글 함수
+    function toggleAssembly() {
+        const check = document.getElementById('assemblyCheck');
+        // 체크박스 자체를 클릭한 게 아니라 div를 클릭했을 때를 위해 토글 처리
+        if (event.target.type !== 'checkbox') {
+            check.checked = !check.checked;
         }
+        updateSummary();
+    }
 
-        const categories = ["CPU", "메인보드", "메모리", "그래픽카드", "SSD/HDD", "케이스", "파워", "쿨러"];
-        const allItems = Object.entries(data); // key 포함 정보를 위해 entries 사용
+    // [수정] 부품 선택 함수 (누락되었던 부분 추가)
+    function selectPart(category, name, price) {
+        selectedItems[category] = {
+            name: name,
+            price: price,
+            count: 1
+        };
+        updateSummary();
+    }
 
-        container.innerHTML = categories.map(cat => {
-            const catParts = allItems.filter(([key, item]) => item.category === cat);
-            if (catParts.length === 0) return '';
+    // [수정] 수량 조절 및 삭제 함수
+    function updateCount(category, change) {
+        if (!selectedItems[category]) return;
+        
+        selectedItems[category].count += change;
+        
+        if (selectedItems[category].count <= 0) {
+            delete selectedItems[category];
+        }
+        updateSummary();
+    }
 
-            return `
-                <div class="mb-12">
-                    <h3 class="text-xl font-black mb-6 flex items-center gap-2 uppercase">
-                        <span class="w-1.5 h-6 bg-blue-600 rounded-full"></span> ${cat}
-                    </h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        ${catParts.map(([key, item]) => `
-                            <div onclick="selectPart('${cat}', '${item.name}', ${item.price})" 
-                                 class="bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm hover:border-blue-500 hover:shadow-md transition-all cursor-pointer group">
-                                <div class="flex items-center gap-5">
-                                    <img src="${item.image || 'https://via.placeholder.com/150'}" class="w-20 h-20 object-cover rounded-2xl bg-gray-50">
-                                    <div class="flex-1 min-w-0">
-                                        <h4 class="font-bold text-gray-800 text-lg truncate">${item.name}</h4>
-                                        <p class="text-blue-600 font-black text-xl mt-1">${Number(item.price).toLocaleString()}원</p>
+    // [수정] 화면 데이터 로드 함수
+    function loadParts() {
+        // HTML의 ID인 partsContainer를 가져옴 (또는 HTML의 ID를 parts-container로 변경)
+        const container = document.getElementById('partsContainer');
+        if(!container) return;
+
+        db.ref('parts_db').on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (!data) {
+                container.innerHTML = `<div class="col-span-full text-center py-20 bg-white rounded-[40px] border-2 border-dashed border-gray-100">등록된 부품이 없습니다.</div>`;
+                return;
+            }
+
+            const categories = ["CPU", "메인보드", "메모리", "그래픽카드", "SSD/HDD", "케이스", "파워", "쿨러"];
+            const allItems = Object.entries(data);
+
+            container.innerHTML = categories.map(cat => {
+                const catParts = allItems.filter(([key, item]) => item.category === cat);
+                if (catParts.length === 0) return '';
+
+                return `
+                    <div class="mb-12">
+                        <h3 class="text-xl font-black mb-6 flex items-center gap-2 uppercase">
+                            <span class="w-1.5 h-6 bg-blue-600 rounded-full"></span> ${cat}
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            ${catParts.map(([key, item]) => `
+                                <div onclick="selectPart('${cat}', '${item.name}', ${item.price})" 
+                                     class="bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm hover:border-blue-500 hover:shadow-md transition-all cursor-pointer group">
+                                    <div class="flex items-center gap-5">
+                                        <img src="${item.image || 'https://via.placeholder.com/150'}" class="w-20 h-20 object-cover rounded-2xl bg-gray-50">
+                                        <div class="flex-1 min-w-0">
+                                            <h4 class="font-bold text-gray-800 text-lg truncate">${item.name}</h4>
+                                            <p class="text-blue-600 font-black text-xl mt-1">${Number(item.price).toLocaleString()}원</p>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        `).join('')}
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        });
+    }
+
+    // [수정] 요약 업데이트 및 금액 계산 (조립비 옵션 반영 핵심)
+    function updateSummary() {
+        const summary = document.getElementById('selectedSummary');
+        const totalDisplay = document.getElementById('totalDisplay');
+        const isAssemblyChecked = document.getElementById('assemblyCheck').checked;
+        
+        // 조립비는 체크되었을 때만 기본값으로 설정
+        let total = isAssemblyChecked ? ASSEMBLY_FEE : 0;
+        
+        let html = Object.entries(selectedItems).map(([cat, item]) => {
+            const itemTotal = item.price * item.count;
+            total += itemTotal;
+            return `
+                <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100">
+                    <div class="flex justify-between items-start mb-2">
+                        <p class="text-sm font-bold text-gray-800 truncate">${item.name}</p>
+                        <button onclick="updateCount('${cat}', -${item.count})" class="text-gray-300">✕</button>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <div class="flex gap-2">
+                            <button onclick="updateCount('${cat}', -1)" class="w-6 h-6 bg-white rounded border">-</button>
+                            <span class="font-bold text-sm">${item.count}</span>
+                            <button onclick="updateCount('${cat}', 1)" class="w-6 h-6 bg-white rounded border">+</button>
+                        </div>
+                        <span class="text-sm font-black">${itemTotal.toLocaleString()}원</span>
                     </div>
                 </div>
             `;
         }).join('');
-    });
-}
 
-function updateSummary() {
-    const summary = document.getElementById('selectedSummary');
-    const totalDisplay = document.getElementById('totalDisplay');
-    const isAssemblyChecked = document.getElementById('assemblyCheck').checked;
-    
-    let total = isAssemblyChecked ? ASSEMBLY_FEE : 0;
-    
-    let html = Object.entries(selectedItems).map(([cat, item]) => {
-        const itemTotal = item.price * item.count;
-        total += itemTotal;
-        return `
-            <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100">
-                <div class="flex justify-between items-start mb-2">
-                    <p class="text-sm font-bold text-gray-800 truncate">${item.name}</p>
-                    <button onclick="updateCount('${cat}', -${item.count})" class="text-gray-300">✕</button>
-                </div>
-                <div class="flex justify-between items-center">
-                    <div class="flex gap-2">
-                        <button onclick="updateCount('${cat}', -1)" class="w-6 h-6 bg-white rounded border">-</button>
-                        <span class="font-bold">${item.count}</span>
-                        <button onclick="updateCount('${cat}', 1)" class="w-6 h-6 bg-white rounded border">+</button>
-                    </div>
-                    <span class="text-sm font-black">${itemTotal.toLocaleString()}원</span>
-                </div>
-            </div>
-        `;
-    }).join('');
-
-    summary.innerHTML = html || '<p class="text-gray-400 text-sm text-center py-10">부품을 선택해 주세요.</p>';
-    totalDisplay.innerText = total.toLocaleString() + '원';
-}
+        summary.innerHTML = html || '<p class="text-gray-400 text-sm text-center py-10">선택된 부품이 없습니다.</p>';
+        totalDisplay.innerText = total.toLocaleString() + '원';
+    }
 
         function generatePDF(data) {
             document.getElementById('pdf-name').innerText = data.name;
