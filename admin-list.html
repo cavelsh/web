@@ -336,6 +336,7 @@ let editingPartKey = null; // 수정 중인 부품의 ID 저장용
 
 // 1. 부품 저장 (등록 및 수정 공용)
 function savePartItem() {
+    // 입력 필드 값 가져오기
     const category = document.getElementById('partCategory').value;
     const name = document.getElementById('partName').value;
     const price = parseInt(document.getElementById('partPrice').value);
@@ -343,27 +344,35 @@ function savePartItem() {
     const image = document.getElementById('partImage').value;
     const description = document.getElementById('partDesc').value;
 
-    if(!name || isNaN(price)) return alert("부품명과 가격을 정확히 입력해주세요.");
+    if (!name || isNaN(price)) {
+        alert("부품명과 가격을 정확히 입력해주세요.");
+        return;
+    }
 
-const partData = { 
-        category, 
-        name, 
-        price, 
-        stock, 
-        image, 
-        description, // description 사용
-        timestamp: Date.now() 
+    const partData = {
+        category,
+        name,
+        price,
+        stock,
+        image: image || 'https://via.placeholder.com/100',
+        description: description || "",
+        timestamp: Date.now()
     };
 
-if (editingPartKey) {
+    // [핵심] editingPartKey가 있으면 기존 데이터 수정(update), 없으면 새 데이터 생성(push)
+    if (editingPartKey) {
         db.ref('parts_db').child(editingPartKey).update(partData).then(() => {
-            alert("부품 정보가 수정되었습니다.");
-            resetPartForm();
+            alert("부품 정보가 성공적으로 수정되었습니다.");
+            resetPartForm(); // 입력창 초기화 및 editingPartKey 제거
+        }).catch((error) => {
+            alert("수정 실패: " + error.message);
         });
     } else {
         db.ref('parts_db').push(partData).then(() => {
             alert("새 부품이 등록되었습니다.");
             resetPartForm();
+        }).catch((error) => {
+            alert("등록 실패: " + error.message);
         });
     }
 }
@@ -390,16 +399,16 @@ function editPart(key, dataJson) {
 
 // 3. 입력폼 초기화 함수
 function resetPartForm() {
-    editingPartKey = null;
+    editingPartKey = null; // 수정 중인 키 초기화
     document.getElementById('partName').value = '';
     document.getElementById('partPrice').value = '';
     document.getElementById('partStock').value = '';
     document.getElementById('partImage').value = '';
     document.getElementById('partDesc').value = '';
     
+    // 버튼 텍스트를 다시 '등록'으로 변경 (UI 요소가 있다면)
     const btn = document.querySelector("button[onclick='savePartItem()']");
-    btn.innerText = "부품 데이터 등록";
-    btn.className = "w-full bg-blue-600 text-white py-4 rounded-2xl font-black hover:bg-blue-700 transition-all";
+    if(btn) btn.innerText = "부품 데이터 등록";
 }
 
 // 4. 관리자 페이지에 등록된 부품 리스트 출력
