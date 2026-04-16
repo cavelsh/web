@@ -348,34 +348,44 @@ function savePartItem() {
     const name = document.getElementById('partName').value;
     const price = parseInt(document.getElementById('partPrice').value);
     
-    if(!name || isNaN(price)) return alert("부품명과 가격을 입력해주세요.");
+    if(!name || isNaN(price)) {
+        alert("부품명과 가격을 정확히 입력해주세요.");
+        return;
+    }
 
-    const data = {
+    const partData = {
         category: document.getElementById('partCategory').value,
         name: name,
         price: price,
-        image: document.getElementById('partImage').value || "",
+        image: document.getElementById('partImage').value || "https://via.placeholder.com/150",
         description: document.getElementById('partDesc').value,
         timestamp: Date.now()
     };
 
     if (editingPartKey) {
-        // 수정 로직
-        db.ref('parts_db').child(editingPartKey).update(data)
-            .then(() => { alert("수정되었습니다."); resetPartForm(); });
+        // 수정 모드: 기존 경로의 데이터를 업데이트
+        db.ref('parts_db').child(editingPartKey).update(partData)
+            .then(() => {
+                alert("수정이 완료되었습니다.");
+                resetPartForm(); // 폼 초기화
+            })
+            .catch(err => alert("수정 실패: " + err));
     } else {
-        // 등록 로직
-        db.ref('parts_db').push(data)
-            .then(() => { alert("등록되었습니다."); resetPartForm(); });
+        // 등록 모드: 새로운 데이터를 추가
+        db.ref('parts_db').push(partData)
+            .then(() => {
+                alert("새 부품이 등록되었습니다.");
+                resetPartForm(); // 폼 초기화
+            })
+            .catch(err => alert("등록 실패: " + err));
     }
 }
-
 
 // editPart 함수 수정
 // 수정 모드 진입
 function editPart(key, json) {
     const item = JSON.parse(decodeURIComponent(json));
-    editingPartKey = key; // 전역 변수에 키 저장
+    editingPartKey = key; // 중요: 수정할 데이터의 ID를 전역 변수에 저장
 
     document.getElementById('partCategory').value = item.category;
     document.getElementById('partName').value = item.name;
@@ -383,19 +393,24 @@ function editPart(key, json) {
     document.getElementById('partImage').value = item.image || "";
     document.getElementById('partDesc').value = item.description || item.desc || "";
 
-    document.getElementById('submitBtn').innerText = "부품 수정 완료";
-    document.getElementById('cancelBtn').classList.remove('hidden');
+    // 버튼 텍스트 변경으로 수정 모드임을 알림
+    document.getElementById('submitBtn').innerText = "부품 정보 수정 완료";
+    if(document.getElementById('cancelBtn')) {
+        document.getElementById('cancelBtn').classList.remove('hidden');
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function resetPartForm() {
-    editingPartKey = null;
+    editingPartKey = null; // 중요: 등록 모드로 전환하기 위해 null 처리
     document.getElementById('partName').value = "";
     document.getElementById('partPrice').value = "";
     document.getElementById('partImage').value = "";
     document.getElementById('partDesc').value = "";
     document.getElementById('submitBtn').innerText = "부품 데이터 등록";
-    document.getElementById('cancelBtn').classList.add('hidden');
+    if(document.getElementById('cancelBtn')) {
+        document.getElementById('cancelBtn').classList.add('hidden');
+    }
 }
 
     // 부품 삭제
