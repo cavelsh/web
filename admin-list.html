@@ -112,23 +112,31 @@
         <span class="w-2 h-8 bg-blue-600 rounded-full"></span> 견적 부품 DB 관리
     </h2>
     <div class="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-            <select id="partCategory" class="px-5 py-4 bg-gray-50 border-none rounded-2xl outline-none text-sm font-bold">
-                <option value="CPU">CPU</option>
-                <option value="메인보드">메인보드</option>
-                <option value="메모리">메모리</option>
-                <option value="그래픽카드">그래픽카드</option>
-                <option value="SSD/HDD">SSD/HDD</option>
-                <option value="케이스">케이스</option>
-                <option value="파워">파워</option>
-                <option value="쿨러">쿨러</option>
-            </select>
-            <input type="text" id="partName" placeholder="부품명 (예: Intel i7 14700)" class="px-5 py-4 bg-gray-50 border-none rounded-2xl outline-none text-sm">
-            <input type="number" id="partPrice" placeholder="단가 (숫자만)" class="px-5 py-4 bg-gray-50 border-none rounded-2xl outline-none text-sm">
-            <input type="number" id="partStock" placeholder="재고 수량" class="px-5 py-4 bg-gray-50 border-none rounded-2xl outline-none text-sm">
-            <input type="text" id="partImage" placeholder="이미지 URL" class="px-5 py-4 bg-gray-50 border-none rounded-2xl outline-none text-sm">
-            <input type="text" id="partDesc" placeholder="상세 설명 (짧게)" class="px-5 py-4 bg-gray-50 border-none rounded-2xl outline-none text-sm">
-        </div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div>
+        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">카테고리</label>
+        <select id="partCategory" class="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 font-bold">
+            <option>CPU</option><option>메인보드</option><option>메모리</option><option>그래픽카드</option>
+            <option>SSD/HDD</option><option>케이스</option><option>파워</option><option>쿨러</option>
+        </select>
+    </div>
+    <div>
+        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">부품명</label>
+        <input type="text" id="partName" class="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 font-bold">
+    </div>
+    <div>
+        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">판매 가격</label>
+        <input type="number" id="partPrice" class="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 font-bold">
+    </div>
+    <div>
+        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">이미지 URL</label>
+        <input type="text" id="partImage" class="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 font-bold">
+    </div>
+    <div class="md:col-span-2">
+        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">상세 설명</label>
+        <textarea id="partDesc" rows="4" class="w-full bg-gray-50 border-none rounded-3xl px-6 py-5 font-medium"></textarea>
+    </div>
+</div>
         <button onclick="addPartItem()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black hover:bg-blue-700 transition-all">부품 데이터 등록</button>
         
         <div id="adminPartsList" class="mt-8 space-y-2 max-h-[400px] overflow-y-auto no-scrollbar"></div>
@@ -337,76 +345,58 @@ function addPartItem() {
 
 // 1. 부품 저장 (등록 및 수정 공용)
 function savePartItem() {
-        const category = document.getElementById('partCategory').value;
-        const name = document.getElementById('partName').value;
-        const price = parseInt(document.getElementById('partPrice').value);
-        const image = document.getElementById('partImage').value || 'https://via.placeholder.com/150';
-        const description = document.getElementById('partDesc').value;
+    const name = document.getElementById('partName').value;
+    const price = parseInt(document.getElementById('partPrice').value);
+    
+    if(!name || isNaN(price)) return alert("부품명과 가격을 입력해주세요.");
 
-        if(!name || isNaN(price)) return alert("부품명과 가격을 입력해주세요.");
+    const data = {
+        category: document.getElementById('partCategory').value,
+        name: name,
+        price: price,
+        image: document.getElementById('partImage').value || "",
+        description: document.getElementById('partDesc').value,
+        timestamp: Date.now()
+    };
 
-        const partData = {
-            category,
-            name,
-            price,
-            image,
-            description,
-            timestamp: Date.now()
-        };
-
-        if (editingPartKey) {
-            // 수정 모드
-            db.ref('parts_db').child(editingPartKey).update(partData).then(() => {
-                alert("성공적으로 수정되었습니다.");
-                resetPartForm();
-            });
-        } else {
-            // 등록 모드
-            db.ref('parts_db').push(partData).then(() => {
-                alert("신규 등록되었습니다.");
-                resetPartForm();
-            });
-        }
+    if (editingPartKey) {
+        // 수정 로직
+        db.ref('parts_db').child(editingPartKey).update(data)
+            .then(() => { alert("수정되었습니다."); resetPartForm(); });
+    } else {
+        // 등록 로직
+        db.ref('parts_db').push(data)
+            .then(() => { alert("등록되었습니다."); resetPartForm(); });
     }
+}
+
 
 // editPart 함수 수정
 // 수정 모드 진입
-    function editPart(key, dataJson) {
-        const data = JSON.parse(decodeURIComponent(dataJson));
-        editingPartKey = key;
+function editPart(key, json) {
+    const item = JSON.parse(decodeURIComponent(json));
+    editingPartKey = key; // 전역 변수에 키 저장
 
-        document.getElementById('partCategory').value = data.category;
-        document.getElementById('partName').value = data.name;
-        document.getElementById('partPrice').value = data.price;
-        document.getElementById('partImage').value = data.image || '';
-        document.getElementById('partDesc').value = data.description || data.desc || '';
+    document.getElementById('partCategory').value = item.category;
+    document.getElementById('partName').value = item.name;
+    document.getElementById('partPrice').value = item.price;
+    document.getElementById('partImage').value = item.image || "";
+    document.getElementById('partDesc').value = item.description || item.desc || "";
 
-        // UI 변경: 버튼 텍스트 및 색상
-        const submitBtn = document.getElementById('submitBtn');
-        submitBtn.innerText = "부품 정보 수정 완료";
-        submitBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-        submitBtn.classList.add('bg-green-600', 'hover:bg-green-700');
-        
-        document.getElementById('cancelBtn').classList.remove('hidden');
+    document.getElementById('submitBtn').innerText = "부품 수정 완료";
+    document.getElementById('cancelBtn').classList.remove('hidden');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    // 폼 초기화
-    function resetPartForm() {
-        editingPartKey = null;
-        document.getElementById('partName').value = '';
-        document.getElementById('partPrice').value = '';
-        document.getElementById('partImage').value = '';
-        document.getElementById('partDesc').value = '';
-
-        const submitBtn = document.getElementById('submitBtn');
-        submitBtn.innerText = "부품 데이터 등록";
-        submitBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
-        submitBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
-
-        document.getElementById('cancelBtn').classList.add('hidden');
-    }
+function resetPartForm() {
+    editingPartKey = null;
+    document.getElementById('partName').value = "";
+    document.getElementById('partPrice').value = "";
+    document.getElementById('partImage').value = "";
+    document.getElementById('partDesc').value = "";
+    document.getElementById('submitBtn').innerText = "부품 데이터 등록";
+    document.getElementById('cancelBtn').classList.add('hidden');
+}
 
     // 부품 삭제
     function deletePart(key) {
