@@ -10,25 +10,13 @@
     <style>
         body { font-family: 'Inter', 'Malgun Gothic', sans-serif; }
         .sticky-summary { position: sticky; top: 5rem; }
-        #pdf-template { display: none; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .part-item {
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
+        /* PDF 템플릿 기본 숨김 처리 (JS에서 제어) */
+        #pdf-template { 
+            display: none; 
+            width: 190mm; /* A4 폭에 맞춤 */
             background: white;
-            padding: 1.25rem 2rem;
-            border-radius: 20px;
-            border: 1px solid #f1f5f9;
-            transition: all 0.2s;
-            cursor: pointer;
-            margin-bottom: 0.75rem;
         }
-        .part-item:hover {
-            border-color: #2563eb;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            transform: translateX(4px);
-        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-900">
@@ -37,11 +25,11 @@
         <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-start gap-10">
             <a href="index.html" class="text-xl font-black text-blue-600">Well Design</a>
             <div class="hidden md:flex gap-6 text-sm font-semibold text-gray-600">
-                    <a href="index.html" class="text-blue-600">메인으로</a>
-                    <a href="estimate.html" class="hover:text-blue-600">컴퓨터 견적내기</a>
-                    <a href="trade-in.html" class="hover:text-blue-600">중고 판매</a>
-                    <a href="archive.html" class="hover:text-blue-600">자료실</a>
-                    <a href="admin-list.html" class="hover:text-blue-600">관리자</a>
+                <a href="index.html" class="text-blue-600">메인으로</a>
+                <a href="estimate.html" class="hover:text-blue-600">컴퓨터 견적내기</a>
+                <a href="trade-in.html" class="hover:text-blue-600">중고 판매</a>
+                <a href="archive.html" class="hover:text-blue-600">자료실</a>
+                <a href="admin-list.html" class="hover:text-blue-600">관리자</a>
             </div>
         </div>
     </nav>
@@ -56,10 +44,8 @@
             <div>
                 <h2 class="text-blue-700 font-black text-lg mb-1">부품 구매 시 주의 사항</h2>
                 <ul class="text-blue-600/80 text-sm font-bold leading-relaxed space-y-1">
-                    <li>• CPU 모델명 뒤에 <span class="text-blue-800 underline">F가 붙는 경우</span>는 CPU 자체 그래픽 기능이 없어서 별도로 그래픽 카드를 구입해야 합니다.</li>
-                    <li>• CPU 부품 안에 <span class="text-blue-800 underline">쿨러가 없는 경우</span>도 별도 쿨러를 구입해야 합니다.</li>
-                    <li>• CPU 구매시 <span class="text-blue-800 underline">  소켓이 1700, 1851인지 구분</span>소켓에 따라 메인보드가 다릅니다.</li>
-                    <li>• 메인보드 구매시 <span class="text-blue-800 underline">보드 모델 뒷 번호가 4 또는 5일 경우</span> 4는 메모리 DDR4, 5는 메모리 DDR5 지원으로 나누어 집니다.</li>
+                    <li>• CPU 모델명 뒤에 <span class="text-blue-800 underline">F가 붙는 경우</span>는 그래픽카드를 별도 구입해야 합니다.</li>
+                    <li>• 소켓(1700, 1851 등)에 따라 메인보드 호환성을 확인하세요.</li>
                 </ul>
             </div>
         </div>
@@ -115,7 +101,7 @@
         </div>
     </div>
 
-    <div id="pdf-template" style="padding: 40px; background: white; font-family: 'Malgun Gothic', sans-serif;">
+    <div id="pdf-template" style="padding: 40px; color: #1a1a1a;">
         <div style="border-bottom: 4px solid #2563eb; padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: flex-end;">
             <h1 style="font-size: 28px; font-weight: 900; margin: 0;">PC 조립 견적서</h1>
             <span id="pdf-date" style="font-size: 12px; color: #666;"></span>
@@ -156,12 +142,10 @@
 
         function loadParts() {
             const container = document.getElementById('partsContainer');
-            if(!container) return;
-
             db.ref('parts_db').on('value', (snapshot) => {
                 const data = snapshot.val();
                 if (!data) {
-                    container.innerHTML = `<div class="col-span-full text-center py-20 bg-white rounded-[40px] border-2 border-dashed border-gray-100">등록된 부품이 없습니다.</div>`;
+                    container.innerHTML = `<div class="text-center py-20 bg-white rounded-[40px] border-2 border-dashed border-gray-100">등록된 부품이 없습니다.</div>`;
                     return;
                 }
 
@@ -181,29 +165,14 @@
                                 ${catParts.map(([key, item]) => `
                                     <div onclick="selectPart('${cat}', '${item.name}', ${item.price})" 
                                          class="flex items-start gap-6 bg-white px-6 py-5 rounded-2xl border border-gray-100 hover:border-blue-500 hover:shadow-sm transition-all cursor-pointer group">
-                                        
-                                        <img src="${item.image || 'https://via.placeholder.com/150'}" 
-                                             class="w-16 h-16 object-cover rounded-xl bg-gray-50 flex-shrink-0 mt-1">
-                                        
-                                        <div class="flex-1 flex flex-col md:flex-row md:items-start gap-2 md:gap-8 min-w-0">
+                                        <img src="${item.image || 'https://via.placeholder.com/150'}" class="w-16 h-16 object-cover rounded-xl bg-gray-50 flex-shrink-0">
+                                        <div class="flex-1 flex flex-col md:flex-row md:items-start gap-2 min-w-0">
                                             <div class="flex-1 min-w-0">
                                                 <h4 class="font-bold text-gray-800 text-base leading-tight group-hover:text-blue-600 transition-colors">${item.name}</h4>
-                                                
-                                                <p class="text-xs text-gray-400 mt-1.5 leading-relaxed break-keep">
-                                                    ${item.description || item.desc || '상세 사양 정보가 없습니다.'}
-                                                </p>
+                                                <p class="text-xs text-gray-400 mt-1.5">${item.description || ''}</p>
                                             </div>
-                                            
-                                            <div class="text-right flex-shrink-0 md:pt-1">
+                                            <div class="text-right flex-shrink-0">
                                                 <p class="text-gray-900 font-black text-lg">${Number(item.price).toLocaleString()}원</p>
-                                            </div>
-                                        </div>
-
-                                        <div class="hidden md:flex items-center self-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <div class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center">
-                                                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path>
-                                                </svg>
                                             </div>
                                         </div>
                                     </div>
@@ -239,7 +208,6 @@
             const isAssemblyChecked = document.getElementById('assemblyCheck').checked;
             
             let total = isAssemblyChecked ? ASSEMBLY_FEE : 0;
-            
             let html = Object.entries(selectedItems).map(([cat, item]) => {
                 const itemTotal = item.price * item.count;
                 total += itemTotal;
@@ -265,64 +233,59 @@
             totalDisplay.innerText = total.toLocaleString() + '원';
         }
 
- function generatePDF(data) {
-    const element = document.getElementById('pdf-template');
-    
-    // 데이터 삽입
-    document.getElementById('pdf-name').innerText = data.name;
-    document.getElementById('pdf-phone').innerText = data.phone;
-    document.getElementById('pdf-date').innerText = "발행일: " + new Date().toLocaleDateString();
-    document.getElementById('pdf-total').innerText = data.totalPrice;
+        // PDF 생성 함수 (수정됨)
+        async function generatePDF(data) {
+            const element = document.getElementById('pdf-template');
+            
+            // 데이터 매핑
+            document.getElementById('pdf-name').innerText = data.name;
+            document.getElementById('pdf-phone').innerText = data.phone;
+            document.getElementById('pdf-date').innerText = "발행일: " + new Date().toLocaleDateString();
+            document.getElementById('pdf-total').innerText = data.totalPrice;
 
-    const itemsTable = document.getElementById('pdf-items');
-    const isAssemblyChecked = document.getElementById('assemblyCheck').checked;
-    
-    let rows = Object.entries(data.items).map(([cat, item]) => `
-        <tr>
-            <td style="padding: 12px; border-bottom: 1px solid #eee; font-size: 12px;">${cat}</td>
-            <td style="padding: 12px; border-bottom: 1px solid #eee; font-size: 12px; font-weight: bold;">${item.name}</td>
-            <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: center; font-size: 12px;">${item.count}</td>
-            <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: right; font-size: 12px;">${(item.price * item.count).toLocaleString()}원</td>
-        </tr>
-    `).join('');
+            const itemsTable = document.getElementById('pdf-items');
+            const isAssemblyChecked = document.getElementById('assemblyCheck').checked;
+            
+            let rows = Object.entries(data.items).map(([cat, item]) => `
+                <tr>
+                    <td style="padding: 12px; border-bottom: 1px solid #eee; font-size: 12px;">${cat}</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #eee; font-size: 12px; font-weight: bold;">${item.name}</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: center; font-size: 12px;">${item.count}</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: right; font-size: 12px;">${(item.price * item.count).toLocaleString()}원</td>
+                </tr>
+            `).join('');
 
-    if (isAssemblyChecked) {
-        rows += `
-            <tr style="background-color: #f0f7ff;">
-                <td style="padding: 12px; border-bottom: 1px solid #eee; font-size: 12px;">Service</td>
-                <td style="padding: 12px; border-bottom: 1px solid #eee; font-size: 12px; font-weight: bold;">조립 및 1년 출장 A/S</td>
-                <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: center; font-size: 12px;">1</td>
-                <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: right; font-size: 12px; font-weight: bold; color: #2563eb;">100,000원</td>
-            </tr>`;
-    }
-    itemsTable.innerHTML = rows;
+            if (isAssemblyChecked) {
+                rows += `<tr style="background-color: #f0f7ff;">
+                    <td style="padding: 12px; border-bottom: 1px solid #eee; font-size: 12px;">Service</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #eee; font-size: 12px; font-weight: bold;">조립 및 1년 출장 A/S</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: center; font-size: 12px;">1</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: right; font-size: 12px; font-weight: bold; color: #2563eb;">100,000원</td>
+                </tr>`;
+            }
+            itemsTable.innerHTML = rows;
 
-    // --- 수정 포인트: 요소 보이기 ---
-    element.style.display = 'block';
-    element.style.position = 'fixed';
-    element.style.left = '-9999px'; // 화면 밖으로 밀어냄
-    element.style.top = '0';
+            // 렌더링을 위해 일시적으로 노출 및 화면 밖 배치
+            element.style.display = 'block';
+            element.style.position = 'fixed';
+            element.style.left = '-9999px';
 
-    const opt = {
-        margin: 10,
-        filename: `Compatch_견적서_${data.name}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { 
-            scale: 2, 
-            useCORS: true, // 이미지 로딩 문제 해결
-            logging: false,
-            letterRendering: true
-        },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
+            const opt = {
+                margin: 10,
+                filename: `WellDesign_견적서_${data.name}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, logging: false },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
 
-    // 렌더링 지연을 주어 브라우저가 표를 그릴 시간을 줌
-    html2pdf().set(opt).from(element).save().then(() => {
-        element.style.display = 'none';
-    });
-}
+            try {
+                await html2pdf().set(opt).from(element).save();
+            } finally {
+                element.style.display = 'none';
+            }
+        }
 
-        document.getElementById('consultForm').addEventListener('submit', function(e) {
+        document.getElementById('consultForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const isAssemblyChecked = document.getElementById('assemblyCheck').checked;
             const requestData = {
@@ -335,11 +298,11 @@
                 timestamp: Date.now()
             };
 
-            db.ref('requests').push(requestData, (error) => {
+            db.ref('requests').push(requestData, async (error) => {
                 if (!error) {
-                    generatePDF(requestData);
+                    await generatePDF(requestData);
                     alert('신청이 완료되었습니다! 견적서 PDF가 다운로드됩니다.');
-                    setTimeout(() => location.reload(), 2000);
+                    location.reload();
                 }
             });
         });
@@ -354,6 +317,7 @@
         }
 
         function closeConsultModal() {
+            document.getElementById('consultModal').classList.remove('flex');
             document.getElementById('consultModal').classList.add('hidden');
         }
 
