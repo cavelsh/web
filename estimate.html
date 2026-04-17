@@ -6,8 +6,7 @@
     <title>실시간 견적 | Well Design</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script> 
-   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', 'Malgun Gothic', sans-serif; }
         .sticky-summary { position: sticky; top: 5rem; }
@@ -93,7 +92,7 @@
                             <span id="totalDisplay" class="text-3xl font-black text-blue-600">0원</span>
                         </div>
                         <button onclick="openConsultModal()" class="w-full bg-gray-900 text-white py-4 rounded-2xl font-black text-lg hover:bg-blue-600 transition-all">
-                            상담 신청 및 PDF 저장
+                            상담 신청 및 PDF 받기
                         </button>
                     </div>
                 </div>
@@ -234,43 +233,37 @@
             updateSummary();
         }
 
-function updateSummary() {
-    const summary = document.getElementById('selectedSummary');
-    const totalDisplay = document.getElementById('totalDisplay');
-    const isAssemblyChecked = document.getElementById('assemblyCheck').checked;
-    
-    let total = isAssemblyChecked ? ASSEMBLY_FEE : 0;
-    
-    let html = Object.entries(selectedItems).map(([cat, item]) => {
-        const itemTotal = item.price * item.count;
-        total += itemTotal;
-        return `
-            <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100 mb-2">
-                <div class="flex justify-between items-start mb-2">
-                    <p class="text-sm font-bold text-gray-800 truncate">${item.name}</p>
-                    <button onclick="updateCount('${cat}', -${item.count})" class="text-gray-300">✕</button>
-                </div>
-                <div class="flex justify-between items-center">
-                    <div class="flex gap-2">
-                        <button onclick="updateCount('${cat}', -1)" class="w-6 h-6 bg-white rounded border">-</button>
-                        <span class="font-bold text-sm">${item.count}</span>
-                        <button onclick="updateCount('${cat}', 1)" class="w-6 h-6 bg-white rounded border">+</button>
+        function updateSummary() {
+            const summary = document.getElementById('selectedSummary');
+            const totalDisplay = document.getElementById('totalDisplay');
+            const isAssemblyChecked = document.getElementById('assemblyCheck').checked;
+            
+            let total = isAssemblyChecked ? ASSEMBLY_FEE : 0;
+            
+            let html = Object.entries(selectedItems).map(([cat, item]) => {
+                const itemTotal = item.price * item.count;
+                total += itemTotal;
+                return `
+                    <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100">
+                        <div class="flex justify-between items-start mb-2">
+                            <p class="text-sm font-bold text-gray-800 truncate">${item.name}</p>
+                            <button onclick="updateCount('${cat}', -${item.count})" class="text-gray-300">✕</button>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <div class="flex gap-2">
+                                <button onclick="updateCount('${cat}', -1)" class="w-6 h-6 bg-white rounded border">-</button>
+                                <span class="font-bold text-sm">${item.count}</span>
+                                <button onclick="updateCount('${cat}', 1)" class="w-6 h-6 bg-white rounded border">+</button>
+                            </div>
+                            <span class="text-sm font-black">${itemTotal.toLocaleString()}원</span>
+                        </div>
                     </div>
-                    <span class="text-sm font-black">${itemTotal.toLocaleString()}원</span>
-                </div>
-            </div>
-        `;
-    }).join('');
+                `;
+            }).join('');
 
-    summary.innerHTML = html || '<p class="text-gray-400 text-sm text-center py-10">선택된 부품이 없습니다.</p>';
-    totalDisplay.innerText = total.toLocaleString() + '원';
-
-    // 물품 추가시 스크롤을 맨 아래로 이동시켜 마지막 물품이 보이게 함
-    summary.scrollTo({
-        top: summary.scrollHeight,
-        behavior: 'smooth'
-    });
-}
+            summary.innerHTML = html || '<p class="text-gray-400 text-sm text-center py-10">선택된 부품이 없습니다.</p>';
+            totalDisplay.innerText = total.toLocaleString() + '원';
+        }
 
 // 1. PDF 인쇄 함수 (가장 가볍고 확실한 방식)
 function generatePDF(data) {
