@@ -367,6 +367,15 @@ document.getElementById('consultForm').addEventListener('submit', function(e) {
         });
 });
 
+        function openConsultModal() {
+            if (Object.keys(selectedItems).length === 0) {
+                alert("선택된 부품이 없습니다.");
+                return;
+            }
+            document.getElementById('consultModal').classList.remove('hidden');
+            document.getElementById('consultModal').classList.add('flex');
+        }
+
         function closeConsultModal() {
             document.getElementById('consultModal').classList.add('hidden');
         }
