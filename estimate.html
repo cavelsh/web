@@ -233,37 +233,43 @@
             updateSummary();
         }
 
-        function updateSummary() {
-            const summary = document.getElementById('selectedSummary');
-            const totalDisplay = document.getElementById('totalDisplay');
-            const isAssemblyChecked = document.getElementById('assemblyCheck').checked;
-            
-            let total = isAssemblyChecked ? ASSEMBLY_FEE : 0;
-            
-            let html = Object.entries(selectedItems).map(([cat, item]) => {
-                const itemTotal = item.price * item.count;
-                total += itemTotal;
-                return `
-                    <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100">
-                        <div class="flex justify-between items-start mb-2">
-                            <p class="text-sm font-bold text-gray-800 truncate">${item.name}</p>
-                            <button onclick="updateCount('${cat}', -${item.count})" class="text-gray-300">✕</button>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <div class="flex gap-2">
-                                <button onclick="updateCount('${cat}', -1)" class="w-6 h-6 bg-white rounded border">-</button>
-                                <span class="font-bold text-sm">${item.count}</span>
-                                <button onclick="updateCount('${cat}', 1)" class="w-6 h-6 bg-white rounded border">+</button>
-                            </div>
-                            <span class="text-sm font-black">${itemTotal.toLocaleString()}원</span>
-                        </div>
+function updateSummary() {
+    const summary = document.getElementById('selectedSummary');
+    const totalDisplay = document.getElementById('totalDisplay');
+    const isAssemblyChecked = document.getElementById('assemblyCheck').checked;
+    
+    let total = isAssemblyChecked ? ASSEMBLY_FEE : 0;
+    
+    let html = Object.entries(selectedItems).map(([cat, item]) => {
+        const itemTotal = item.price * item.count;
+        total += itemTotal;
+        return `
+            <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100 mb-2">
+                <div class="flex justify-between items-start mb-2">
+                    <p class="text-sm font-bold text-gray-800 truncate">${item.name}</p>
+                    <button onclick="updateCount('${cat}', -${item.count})" class="text-gray-300">✕</button>
+                </div>
+                <div class="flex justify-between items-center">
+                    <div class="flex gap-2">
+                        <button onclick="updateCount('${cat}', -1)" class="w-6 h-6 bg-white rounded border">-</button>
+                        <span class="font-bold text-sm">${item.count}</span>
+                        <button onclick="updateCount('${cat}', 1)" class="w-6 h-6 bg-white rounded border">+</button>
                     </div>
-                `;
-            }).join('');
+                    <span class="text-sm font-black">${itemTotal.toLocaleString()}원</span>
+                </div>
+            </div>
+        `;
+    }).join('');
 
-            summary.innerHTML = html || '<p class="text-gray-400 text-sm text-center py-10">선택된 부품이 없습니다.</p>';
-            totalDisplay.innerText = total.toLocaleString() + '원';
-        }
+    summary.innerHTML = html || '<p class="text-gray-400 text-sm text-center py-10">선택된 부품이 없습니다.</p>';
+    totalDisplay.innerText = total.toLocaleString() + '원';
+
+    // 물품 추가시 스크롤을 맨 아래로 이동시켜 마지막 물품이 보이게 함
+    summary.scrollTo({
+        top: summary.scrollHeight,
+        behavior: 'smooth'
+    });
+}
 
 // 1. PDF 인쇄 함수 (가장 가볍고 확실한 방식)
 function generatePDF(data) {
