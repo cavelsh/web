@@ -290,10 +290,11 @@ function generatePDF(data) {
 
     // 1. 본체 부품 렌더링
     let mainRows = Object.entries(data.items)
-        .filter(([cat]) => mainPartsCat.includes(cat))
+        .filter(([cat]) => mainPartsCat.includes(cat) || cat === "SSD_HDD")
         .map(([cat, item]) => {
             mainTotal += item.price * item.count;
-            return `<tr><td>${cat}</td><td>${item.name}</td><td>${item.count}</td><td class="text-right">${(item.price * item.count).toLocaleString()}원</td></tr>`;
+            const displayCat = cat === "SSD_HDD" ? "SSD/HDD" : cat;
+            return `<tr><td>${displayCat}</td><td>${item.name}</td><td>${item.count}</td><td class="text-right">${(item.price * item.count).toLocaleString()}원</td></tr>`;
         }).join('');
 
     if (isAssemblyChecked) {
@@ -312,60 +313,79 @@ function generatePDF(data) {
         <html>
         <head>
             <title>견적서_${data.name}</title>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
             <style>
                 body { font-family: 'Malgun Gothic', sans-serif; padding: 40px; color: #333; line-height: 1.6; }
+                .no-print { display: flex; gap: 10px; justify-content: center; margin-bottom: 30px; }
+                .btn { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; }
+                .btn-pdf { background: #10b981; color: white; }
+                .btn-print { background: #2563eb; color: white; }
+                #pdf-area { background: white; padding: 10px; }
                 h1 { color: #2563eb; text-align: center; font-size: 28px; margin-bottom: 30px; }
                 .info { margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #2563eb; display: flex; justify-content: space-between; }
-                table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 30px; }
+                table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
                 th { background: #f8fafc; padding: 12px; border: 1px solid #e2e8f0; font-size: 14px; }
                 td { padding: 10px; border: 1px solid #e2e8f0; font-size: 14px; }
                 .text-right { text-align: right; }
                 .subtotal-row { background: #f1f5f9; font-weight: bold; }
-                .service-row { color: #475569; font-style: italic; }
                 .total-box { background: #2563eb; color: white; padding: 20px; border-radius: 12px; text-align: right; margin-top: 40px; }
-                .total-label { font-size: 16px; opacity: 0.9; }
-                .total-price { font-size: 26px; font-weight: 900; margin-left: 15px; }
                 .section-title { font-size: 18px; font-weight: bold; margin-top: 30px; color: #1e293b; display: flex; align-items: center; }
                 .section-title::before { content: ''; display: inline-block; width: 4px; height: 18px; background: #2563eb; margin-right: 8px; border-radius: 2px; }
+                @media print { .no-print { display: none !important; } }
             </style>
         </head>
         <body>
-            <h1>PC 조립 견적서</h1>
-        <div class="no-print">
-        <button onclick="saveAsPDF()" class="btn btn-pdf">📄 PDF 파일로 저장</button>
-        <button onclick="window.print()" class="btn btn-print">🖨️ 견적서 인쇄하기</button>
-       </div>
-       <div id="pdf-area">
-            <div class="info">
-                <div><strong>고객명:</strong> ${data.name}</div>
-                <div><strong>연락처:</strong> ${data.phone}</div>
-                <div><strong>발행일:</strong> ${new Date().toLocaleDateString()}</div>
+            <div class="no-print">
+                <button onclick="saveAsPDF()" class="btn btn-pdf">📄 PDF 파일로 저장</button>
+                <button onclick="window.print()" class="btn btn-print">🖨️ 견적서 인쇄하기</button>
             </div>
 
-            <div class="section-title">본체 구성 부품</div>
-            <table>
-                <thead><tr><th>구분</th><th>제품명</th><th>수량</th><th class="text-right">금액</th></tr></thead>
-                <tbody>
-                    ${mainRows || '<tr><td colspan="4" style="text-align:center; color:#999;">선택된 본체 부품이 없습니다.</td></tr>'}
-                    <tr class="subtotal-row"><td colspan="3" class="text-right">본체 합계</td><td class="text-right">${mainTotal.toLocaleString()}원</td></tr>
-                </tbody>
-            </table>
+            <div id="pdf-area">
+                <h1>PC 조립 견적서</h1>
+                <div class="info">
+                    <div><strong>고객명:</strong> ${data.name}</div>
+                    <div><strong>발행일:</strong> ${new Date().toLocaleDateString()}</div>
+                </div>
 
-            ${periRows ? `
-            <div class="section-title">주변 기기 및 기타</div>
-            <table>
-                <thead><tr><th>구분</th><th>제품명</th><th>수량</th><th class="text-right">금액</th></tr></thead>
-                <tbody>
-                    ${periRows}
-                    <tr class="subtotal-row"><td colspan="3" class="text-right">주변기기 합계</td><td class="text-right">${peripheryTotal.toLocaleString()}원</td></tr>
-                </tbody>
-            </table>` : ''}
+                <div class="section-title">본체 구성 부품</div>
+                <table>
+                    <thead><tr><th>구분</th><th>제품명</th><th>수량</th><th class="text-right">금액</th></tr></thead>
+                    <tbody>
+                        ${mainRows || '<tr><td colspan="4" style="text-align:center;">선택된 부품이 없습니다.</td></tr>'}
+                        <tr class="subtotal-row"><td colspan="3" class="text-right">본체 합계</td><td class="text-right">${mainTotal.toLocaleString()}원</td></tr>
+                    </tbody>
+                </table>
 
-            <div class="total-box">
-                <span class="total-label">최종 합계 금액 (VAT 포함)</span>
-                <span class="total-price">${data.totalPrice}</span>
+                ${periRows ? `
+                <div class="section-title">주변 기기 및 기타</div>
+                <table>
+                    <thead><tr><th>구분</th><th>제품명</th><th>수량</th><th class="text-right">금액</th></tr></thead>
+                    <tbody>
+                        ${periRows}
+                        <tr class="subtotal-row"><td colspan="3" class="text-right">주변기기 합계</td><td class="text-right">${peripheryTotal.toLocaleString()}원</td></tr>
+                    </tbody>
+                </table>` : ''}
+
+                <div class="total-box">
+                    <span style="font-size: 16px;">최종 합계 금액 (VAT 포함)</span>
+                    <span style="font-size: 26px; font-weight: 900; margin-left: 15px;">${data.totalPrice}</span>
+                </div>
             </div>
-       </div>
+
+            <script>
+                // 여기에 함수를 정의해야 새 창에서 인식할 수 있습니다.
+                function saveAsPDF() {
+                    const element = document.getElementById('pdf-area');
+                    const options = {
+                        margin: 10,
+                        filename: '견적서_${data.name}.pdf',
+                        image: { type: 'jpeg', quality: 0.98 },
+                        html2canvas: { scale: 2 },
+                        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                    };
+                    html2pdf().set(options).from(element).save();
+                }
+            </script>
         </body>
         </html>
     `);
