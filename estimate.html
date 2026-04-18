@@ -336,18 +336,14 @@ function generatePDF(data) {
 }
 
 // 2. 통합된 신청 폼 전송 로직
-document.getElementById('consultForm').addEventListener('submit', function(e) {
+document.getElementById('consultForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     
     const submitBtn = e.target.querySelector('button[type="submit"]');
     if (submitBtn.disabled) return;
 
-  //  submitBtn.disabled = true;
-  //  submitBtn.innerText = "처리 중...";
-
+    // 1. 데이터 준비
     const isAssemblyChecked = document.getElementById('assemblyCheck').checked;
-    
-    // 데이터 전송용 객체 생성 (안전한 복사)
     const requestData = {
         name: document.getElementById('userName').value,
         phone: document.getElementById('userPhone').value,
@@ -358,19 +354,27 @@ document.getElementById('consultForm').addEventListener('submit', function(e) {
         timestamp: Date.now()
     };
 
-    // Firebase 전송
-    db.ref('requests').push(requestData)
-        .then(() => {
-            generatePDF(requestData);
-            alert('신청이 완료되었습니다! 인쇄 창에서 PDF로 저장해 주세요.');
-            location.reload(); 
-        })
-        .catch((error) => {
-            console.error("Firebase Error:", error);
-            alert('전송 중 오류가 발생했습니다.');
-            submitBtn.disabled = false;
-            submitBtn.innerText = "신청 완료";
-        });
+    submitBtn.disabled = true;
+    submitBtn.innerText = "처리 중...";
+
+    try {
+        // 2. Firebase 전송 (await를 사용하여 명확하게 대기)
+        await db.ref('requests').push(requestData);
+        
+        // 3. 성공 알림을 먼저 띄워 사용자 클릭을 유도 (팝업 차단 방지)
+        alert('신청이 완료되었습니다! 확인을 누르시면 견적서 인쇄창이 열립니다.');
+        
+        // 4. PDF 생성 호출
+        generatePDF(requestData);
+        
+        // 5. 페이지 새로고침
+        location.reload(); 
+    } catch (error) {
+        console.error("전송 오류 상세:", error);
+        alert('전송 중 오류가 발생했습니다: ' + error.message);
+        submitBtn.disabled = false;
+        submitBtn.innerText = "신청 완료";
+    }
 });
 
         function openConsultModal() {
