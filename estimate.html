@@ -271,7 +271,7 @@ function updateSummary() {
     });
 }
 
-// 1. PDF 인쇄 함수 (가장 가볍고 확실한 방식)
+// PDF 인쇄 함수 (본체 부품과 주변기기 분리 버전)
 function generatePDF(data) {
     const isAssemblyChecked = document.getElementById('assemblyCheck').checked;
     const printWindow = window.open('', '_blank');
@@ -281,58 +281,90 @@ function generatePDF(data) {
         return;
     }
 
-    let rows = Object.entries(data.items).map(([cat, item]) => `
-        <tr>
-            <td style="padding: 10px; border: 1px solid #ddd;">${cat}</td>
-            <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold;">${item.name}</td>
-            <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">${item.count}</td>
-            <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${(item.price * item.count).toLocaleString()}원</td>
-        </tr>
-    `).join('');
+    // 카테고리 분류 기준
+    const mainPartsCat = ["CPU", "쿨러", "메인보드", "메모리", "그래픽카드", "SSD", "HDD", "케이스", "파워"];
+    const peripheryCat = ["모니터", "프린터", "키보드와마우스"];
+
+    let mainTotal = isAssemblyChecked ? ASSEMBLY_FEE : 0;
+    let peripheryTotal = 0;
+
+    // 1. 본체 부품 렌더링
+    let mainRows = Object.entries(data.items)
+        .filter(([cat]) => mainPartsCat.includes(cat))
+        .map(([cat, item]) => {
+            mainTotal += item.price * item.count;
+            return `<tr><td>${cat}</td><td>${item.name}</td><td>${item.count}</td><td class="text-right">${(item.price * item.count).toLocaleString()}원</td></tr>`;
+        }).join('');
 
     if (isAssemblyChecked) {
-        rows += `
-            <tr style="background-color: #f9fafb;">
-                <td style="padding: 10px; border: 1px solid #ddd;">서비스</td>
-                <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold;">조립 및 1년 출장 A/S</td>
-                <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">1</td>
-                <td style="padding: 10px; border: 1px solid #ddd; text-align: right; color: #2563eb;">100,000원</td>
-            </tr>`;
+        mainRows += `<tr class="service-row"><td>서비스</td><td>조립 및 1년 출장 A/S</td><td>1</td><td class="text-right">100,000원</td></tr>`;
     }
+
+    // 2. 주변 기기 렌더링
+    let periRows = peripheryCat.map(cat => {
+        const item = data.items[cat];
+        if (!item) return '';
+        peripheryTotal += item.price * item.count;
+        return `<tr><td>${cat}</td><td>${item.name}</td><td>${item.count}</td><td class="text-right">${(item.price * item.count).toLocaleString()}원</td></tr>`;
+    }).join('');
 
     printWindow.document.write(`
         <html>
         <head>
             <title>견적서_${data.name}</title>
             <style>
-                body { font-family: 'Malgun Gothic', sans-serif; padding: 30px; }
-                table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-                th { background: #eee; padding: 10px; border: 1px solid #ddd; }
-                h1 { color: #2563eb; text-align: center; }
-                .info { margin-bottom: 20px; border-bottom: 2px solid #2563eb; padding-bottom: 10px; }
-                .total { text-align: right; font-size: 22px; font-weight: bold; margin-top: 20px; color: #2563eb; }
+                body { font-family: 'Malgun Gothic', sans-serif; padding: 40px; color: #333; line-height: 1.6; }
+                h1 { color: #2563eb; text-align: center; font-size: 28px; margin-bottom: 30px; }
+                .info { margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #2563eb; display: flex; justify-content: space-between; }
+                table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 30px; }
+                th { background: #f8fafc; padding: 12px; border: 1px solid #e2e8f0; font-size: 14px; }
+                td { padding: 10px; border: 1px solid #e2e8f0; font-size: 14px; }
+                .text-right { text-align: right; }
+                .subtotal-row { background: #f1f5f9; font-weight: bold; }
+                .service-row { color: #475569; font-style: italic; }
+                .total-box { background: #2563eb; color: white; padding: 20px; border-radius: 12px; text-align: right; margin-top: 40px; }
+                .total-label { font-size: 16px; opacity: 0.9; }
+                .total-price { font-size: 26px; font-weight: 900; margin-left: 15px; }
+                .section-title { font-size: 18px; font-weight: bold; margin-top: 30px; color: #1e293b; display: flex; align-items: center; }
+                .section-title::before { content: ''; display: inline-block; width: 4px; height: 18px; background: #2563eb; margin-right: 8px; border-radius: 2px; }
             </style>
         </head>
         <body>
             <h1>PC 조립 견적서</h1>
             <div class="info">
-                <p><strong>고객명:</strong> ${data.name} &nbsp;&nbsp; <strong>연락처:</strong> ${data.phone}</p>
-                <p><strong>발행일:</strong> ${new Date().toLocaleDateString()}</p>
+                <div><strong>고객명:</strong> ${data.name}</div>
+                <div><strong>연락처:</strong> ${data.phone}</div>
+                <div><strong>발행일:</strong> ${new Date().toLocaleDateString()}</div>
             </div>
+
+            <div class="section-title">본체 구성 부품</div>
             <table>
-                <thead><tr><th>구분</th><th>제품명</th><th>수량</th><th>금액</th></tr></thead>
-                <tbody>${rows}</tbody>
+                <thead><tr><th>구분</th><th>제품명</th><th>수량</th><th class="text-right">금액</th></tr></thead>
+                <tbody>
+                    ${mainRows || '<tr><td colspan="4" style="text-align:center; color:#999;">선택된 본체 부품이 없습니다.</td></tr>'}
+                    <tr class="subtotal-row"><td colspan="3" class="text-right">본체 합계</td><td class="text-right">${mainTotal.toLocaleString()}원</td></tr>
+                </tbody>
             </table>
-            <div class="total">최종 합계: ${data.totalPrice}</div>
+
+            ${periRows ? `
+            <div class="section-title">주변 기기 및 기타</div>
+            <table>
+                <thead><tr><th>구분</th><th>제품명</th><th>수량</th><th class="text-right">금액</th></tr></thead>
+                <tbody>
+                    ${periRows}
+                    <tr class="subtotal-row"><td colspan="3" class="text-right">주변기기 합계</td><td class="text-right">${peripheryTotal.toLocaleString()}원</td></tr>
+                </tbody>
+            </table>` : ''}
+
+            <div class="total-box">
+                <span class="total-label">최종 합계 금액 (VAT 포함)</span>
+                <span class="total-price">${data.totalPrice}</span>
+            </div>
         </body>
         </html>
     `);
     printWindow.document.close();
-    
-    // 로드 후 즉시 인쇄창 실행
-    setTimeout(() => {
-        printWindow.print();
-    }, 500);
+    setTimeout(() => { printWindow.print(); }, 500);
 }
 
 // 2. 통합된 신청 폼 전송 로직
