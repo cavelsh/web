@@ -56,12 +56,12 @@
 </div>
 
     <main class="max-w-7xl mx-auto px-4 py-10 space-y-12">
-    <button onclick="switchTab('qna')" id="btn-qna" class="tab-btn py-5 text-gray-500">Q&A 관리</button>
 
-    <section id="section-qna" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-    <h2 class="text-2xl font-black mb-6">Q&A 질문 및 답변</h2>
-    <div id="admin-qna-list" class="space-y-6"></div> 
-    </section>      
+    <section class="mt-12">
+    <h2 class="text-2xl font-black mb-6">Q&A 관리</h2>
+    <div id="admin-qna-list" class="space-y-4">
+        </div>
+    </section>
   
         <section>
             <div class="flex justify-between items-end mb-6">
@@ -500,75 +500,54 @@ function loadUsedProductsAdmin() {
     }
 
     // [신규] Q&A 데이터 로드 및 렌더링
-    function loadAdminQnA() {
-        db.ref('qna').orderByChild('timestamp').on('value', (snapshot) => {
-            const data = snapshot.val();
-            const container = document.getElementById('admin-qna-list');
-            if(!data) {
-                container.innerHTML = "<p class='text-center py-20 text-gray-400 font-medium'>등록된 문의가 없습니다.</p>";
-                return;
-            }
-
-            let html = "";
-            const keys = Object.keys(data).reverse(); // 최신순
-
-            keys.forEach(id => {
-                const item = data[id];
-                const date = new Date(item.timestamp).toLocaleString();
-                const isCompleted = item.status === 'completed';
-
-                html += `
-                    <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm transition-all hover:shadow-md">
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="flex-1">
-                                <div class="flex items-center gap-2 mb-2">
-                                    <span class="text-[10px] font-black px-2 py-1 rounded-full ${isCompleted ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'}">
-                                        ${isCompleted ? '답변완료' : '답변대기'}
-                                    </span>
-                                    ${item.isPrivate ? '<span class="text-xs text-red-500 font-bold">[비밀글]</span>' : ''}
-                                    <span class="text-xs text-gray-400 font-medium">${item.author} | PW: ${item.pw} | ${date}</span>
-                                </div>
-                                <h3 class="text-xl font-bold text-gray-900">${item.title}</h3>
-                            </div>
-                            <button onclick="deleteQnA('${id}')" class="text-red-400 hover:text-red-600 text-xs font-bold transition-colors">삭제</button>
-                        </div>
-                        
-                        <div class="bg-gray-50 p-5 rounded-2xl mb-6 text-sm text-gray-700 whitespace-pre-wrap border border-gray-100">
-                            <div class="text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">Question</div>
-                            ${item.content}
-                        </div>
-
-                        <div class="space-y-3">
-                            <div class="text-[10px] font-bold text-blue-500 uppercase ml-1 tracking-widest">Answer</div>
-                            <textarea id="ans-${id}" class="w-full h-32 p-4 bg-white border border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none text-sm transition-all" placeholder="답변을 입력해 주세요...">${item.answer || ''}</textarea>
-                            <button onclick="submitAnswer('${id}')" class="w-full bg-gray-900 text-white py-4 rounded-2xl font-bold text-sm hover:bg-blue-600 transition-all shadow-lg shadow-gray-100">
-                                ${isCompleted ? '답변 수정하기' : '답변 등록하기'}
-                            </button>
-                        </div>
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
-        });
-    }
-
-    // 답변 제출 함수
-    function submitAnswer(id) {
-        const answer = document.getElementById(`ans-${id}`).value;
-        if(!answer) return alert("답변 내용을 입력하세요.");
-
-        db.ref(`qna/${id}`).update({
-            answer: answer,
-            status: "completed"
-        }).then(() => alert("답변이 성공적으로 등록되었습니다."));
-    }
-
-    // Q&A 삭제 함수
-    function deleteQnA(id) {
-        if(confirm("이 문의글을 정말 삭제할까요?")) {
-            db.ref(`qna/${id}`).remove().then(() => alert("삭제되었습니다."));
+function loadAdminQnA() {
+    db.ref('qna').orderByChild('timestamp').on('value', (snapshot) => {
+        const data = snapshot.val();
+        const container = document.getElementById('admin-qna-list');
+        if(!container) return; // 컨테이너가 없으면 중단
+        
+        if(!data) {
+            container.innerHTML = "<p class='text-center py-20 text-gray-400 font-medium'>등록된 문의가 없습니다.</p>";
+            return;
         }
-    }
+
+        let html = "";
+        const keys = Object.keys(data).reverse();
+
+        keys.forEach(id => {
+            const item = data[id];
+            const date = new Date(item.timestamp).toLocaleString();
+            html += `
+                <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm mb-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <span class="text-[10px] font-black px-2 py-1 rounded-full ${item.status === 'completed' ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'}">
+                                ${item.status === 'completed' ? '답변완료' : '답변대기'}
+                            </span>
+                            <h3 class="text-xl font-bold mt-2">${item.title}</h3>
+                            <p class="text-xs text-gray-400 font-medium">작성자: ${item.author} | PW: ${item.pw} | ${date}</p>
+                        </div>
+                        <button onclick="deleteQnA('${id}')" class="text-red-400 text-xs font-bold">삭제</button>
+                    </div>
+                    <div class="bg-gray-50 p-5 rounded-2xl mb-4 text-sm whitespace-pre-wrap">${item.content}</div>
+                    <textarea id="ans-${id}" class="w-full h-24 p-4 border rounded-2xl text-sm mb-2" placeholder="답변 입력">${item.answer || ''}</textarea>
+                    <button onclick="submitAnswer('${id}')" class="w-full bg-gray-900 text-white py-3 rounded-2xl font-bold text-sm">답변 저장</button>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+    });
+}
+
+// 답변 및 삭제 함수도 함께 있어야 작동합니다.
+function submitAnswer(id) {
+    const answer = document.getElementById(`ans-${id}`).value;
+    db.ref(`qna/${id}`).update({ answer: answer, status: "completed" }).then(() => alert("저장되었습니다."));
+}
+function deleteQnA(id) {
+    if(confirm("삭제할까요?")) db.ref(`qna/${id}`).remove();
+}
+
 // --- 기존 기능 유지 코드 ---
 
     function loadRequests() {
@@ -661,21 +640,22 @@ window.onload = () => {
     }
 
     // 페이지 로드 시 상태 체크
-    window.onload = () => {
-        const isLoggedIn = sessionStorage.getItem("adminLoggedIn") === "true";
-        updateAuthUI();
+window.onload = () => {
+    const isLoggedIn = sessionStorage.getItem("adminLoggedIn") === "true";
+    updateAuthUI();
 
-        if (isLoggedIn) {
-            // 로그인 상태일 때만 데이터 로드
-            if(typeof loadRequests === 'function') loadRequests();
-            if(typeof loadArchiveAdmin === 'function') loadArchiveAdmin();
-            if(typeof loadUsedProductsAdmin === 'function') loadUsedProductsAdmin();
-            loadPartsAdmin();
-        } else {
-            // 로그인 안 되어 있으면 강제로 로그인 모달 표시
-            showLoginModal();
-        }
-    };
+    if (isLoggedIn) {
+        if(typeof loadRequests === 'function') loadRequests();
+        if(typeof loadArchiveAdmin === 'function') loadArchiveAdmin();
+        if(typeof loadUsedProductsAdmin === 'function') loadUsedProductsAdmin();
+        if(typeof loadPartsAdmin === 'function') loadPartsAdmin();
+        
+        // 이 줄이 반드시 추가되어야 Q&A를 불러옵니다.
+        loadAdminQnA(); 
+    } else {
+        showLoginModal();
+    }
+};
 
         function deleteData(node, key) {
             if(confirm('데이터를 영구히 삭제하시겠습니까?')) db.ref(node).child(key).remove();
