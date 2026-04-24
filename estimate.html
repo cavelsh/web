@@ -387,54 +387,58 @@ document.getElementById('consultForm').addEventListener('submit', async function
     const submitBtn = e.target.querySelector('button[type="submit"]');
     if (submitBtn.disabled) return;
 
-    // 데이터 준비
+    // 1. 기본 정보 가져오기
     const name = document.getElementById('userName').value;
     const phone = document.getElementById('userPhone').value;
     const memo = document.getElementById('userMemo').value;
     const totalPrice = document.getElementById('totalDisplay').innerText;
-    
-    // 선택된 아이템 목록을 문자열로 변환 (이메일 본문용)
-    const itemDetails = Object.entries(selectedItems)
-        .map(([cat, item]) => `${cat}: ${item.name} (${item.count}개)`)
+    const isAssemblyChecked = document.getElementById('assemblyCheck').checked;
+
+    // 2. 중요: 부품 리스트를 이메일용 텍스트로 변환
+    // 예: "CPU: Intel i7 (1개) / 메인보드: ASUS B760 (1개) ..."
+    let itemDetails = Object.entries(selectedItems)
+        .map(([cat, item]) => `${cat}: ${item.name} (${item.count}개) - ${(item.price * item.count).toLocaleString()}원`)
         .join('\n');
+
+    if (isAssemblyChecked) {
+        itemDetails += `\n추가 옵션: 조립 및 1년 출장 A/S (100,000원)`;
+    }
 
     const requestData = {
         name: name,
         phone: phone,
         memo: memo,
-        items_summary: itemDetails, // 이메일에 표시될 요약
-        totalPrice: totalPrice,
+        items_list: itemDetails, // 이 변수가 이메일 본문에 들어갈 리스트입니다.
+        total_price: totalPrice,
         timestamp: new Date().toLocaleString()
     };
 
     submitBtn.disabled = true;
-    submitBtn.innerText = "처리 중...";
+    submitBtn.innerText = "전송 중...";
 
     try {
-        // 1. Firebase 데이터 저장
+        // Firebase 저장
         await db.ref('requests').push({
             ...requestData,
-            raw_items: selectedItems // 기존 DB 구조 유지
+            original_items: selectedItems
         });
 
-        // 2. EmailJS를 통한 이메일 발송
-        // SERVICE_ID와 TEMPLATE_ID는 EmailJS 대시보드에서 생성한 값을 사용하세요.
+        // EmailJS 전송 (템플릿 변수명을 맞추는 것이 중요합니다)
         await emailjs.send("service_ae3ooe5", "template_1snauoj", {
-            from_name: name,
-            contact_number: phone,
-            order_details: itemDetails,
+            customer_name: name,
+            customer_phone: phone,
+            order_list: itemDetails, // 이메일 템플릿에 {{order_list}}로 설정
             total_amount: totalPrice,
-            message: memo,
-            to_email: "cavelsh@gmail.com"
+            request_memo: memo
         });
         
-        alert('신청 및 이메일 전송이 완료되었습니다!');
+        alert('부품 리스트를 포함한 상담 신청이 완료되었습니다!');
         generatePDF({...requestData, items: selectedItems});
         location.reload(); 
 
     } catch (error) {
-        console.error("오류 발생:", error);
-        alert('처리 중 오류가 발생했습니다.');
+        console.error("오류:", error);
+        alert('전송에 실패했습니다.');
         submitBtn.disabled = false;
         submitBtn.innerText = "신청 완료";
     }
