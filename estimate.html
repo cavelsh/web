@@ -96,10 +96,13 @@
                     </div>
 
                     <div class="pt-6 border-t border-gray-100">
-                        <div class="flex justify-between items-end mb-6">
-                            <span class="text-gray-500 font-bold">합계 금액</span>
-                            <span id="totalDisplay" class="text-3xl font-black text-blue-600">0원</span>
-                        </div>
+              <div class="mb-6">
+              <div class="flex justify-between items-end">
+              <span class="text-gray-500 font-bold">합계 금액</span>
+              <span id="totalDisplay" class="text-3xl font-black text-blue-600">0원</span>
+              </div>
+              <p class="text-right text-xs text-gray-400 mt-1 font-medium">* 부가세(VAT) 별도</p>
+              </div>
                         <button onclick="openConsultModal()" class="w-full bg-gray-900 text-white py-4 rounded-2xl font-black text-lg hover:bg-blue-600 transition-all">
                             상담 신청 및 PDF 받기
                         </button>
@@ -370,9 +373,9 @@ function generatePDF(data) {
             </table>` : ''}
 
      <div class="total-box">
-      <span class="total-label">최종 합계 금액 (VAT 별도)</span>
-      <span class="total-price">${data.totalPrice || document.getElementById('totalDisplay').innerText}</span>
-      </div>
+    <span class="total-label">최종 합계 금액 (부가세 별도)</span>
+    <span class="total-price">${data.totalPrice || document.getElementById('totalDisplay').innerText}</span>
+     </div>
       </div>
         </body>
         </html>
