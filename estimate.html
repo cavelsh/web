@@ -423,7 +423,7 @@ document.getElementById('consultForm').addEventListener('submit', async function
     try {
         // Firebase 저장
         await db.ref('requests').push({
-            requestData,
+            ...requestData,
             original_items: selectedItems
         });
 

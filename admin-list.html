@@ -169,8 +169,8 @@
 let editingPartKey = null;
 
         // [복구] 1. 고객 견적/판매 신청 내역 로드 및 상세 부품 표시
-        function loadRequests() {
-            db.ref('requests').on('value', (snapshot) => {
+         function loadRequests() {
+                db.ref('requests').on('value', (snapshot) => {
                 const data = snapshot.val();
                 const list = document.getElementById('requestAdminList');
                 const countText = document.getElementById('requestCount');
