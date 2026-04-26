@@ -169,48 +169,73 @@
 let editingPartKey = null;
 
         // [복구] 1. 고객 견적/판매 신청 내역 로드 및 상세 부품 표시
-function loadRequests() {
-    db.ref('requests').on('value', (snapshot) => {
-        const data = snapshot.val();
-        const container = document.getElementById('requestContainer');
-        if(!data) {
-            container.innerHTML = '<p class="text-center py-10 text-gray-400">신청 내역이 없습니다.</p>';
-            return;
-        }
+        function loadRequests() {
+            db.ref('requests').on('value', (snapshot) => {
+                const data = snapshot.val();
+                const list = document.getElementById('requestAdminList');
+                const countText = document.getElementById('requestCount');
 
-        const html = Object.entries(data).reverse().map(([id, item]) => {
-            // 변수명 매칭 확인: estimate.html은 'totalPrice'와 'items_list'를 사용함
-            const name = item.name || '이름 없음';
-            const phone = item.phone || '연락처 없음';
-            const price = item.totalPrice || item.total_price || '0원'; // 두 케이스 모두 대응
-            const items = item.items_list || '내역 없음'; 
-            const memo = item.memo || '-';
-            const date = item.timestamp || '';
+                if (!data) {
+                    list.innerHTML = '<p class="col-span-full text-center py-20 text-gray-400 bg-white rounded-[32px] border border-gray-100">접수된 내역이 없습니다.</p>';
+                    countText.innerText = "접수 0건";
+                    return;
+                }
 
-            return `
-                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all">
-                    <div class="flex justify-between items-start mb-4">
-                        <div>
-                            <div class="text-xs text-gray-400 mb-1">${date}</div>
-                            <div class="font-bold text-lg">${name} <span class="text-sm font-normal text-gray-500">${phone}</span></div>
+                const keys = Object.keys(data).reverse();
+                countText.innerText = `접수 ${keys.length}건`;
+
+                list.innerHTML = keys.map(key => {
+                    const req = data[key];
+                    const date = new Date(req.timestamp).toLocaleString();
+                    
+                    // [부품 상세 리스트 생성]
+                    let itemsHtml = '';
+                    if (req.items) {
+                        itemsHtml = Object.entries(req.items).map(([cat, item]) => `
+                            <div class="flex justify-between items-center text-[11px] py-1 border-b border-gray-50 last:border-0">
+                                <span class="text-gray-400 font-bold w-16 shrink-0">${cat}</span>
+                                <span class="flex-1 text-gray-700 truncate px-2 font-medium">${item.name}</span>
+                                <span class="text-blue-600 font-black shrink-0">${item.count}개</span>
+                            </div>
+                        `).join('');
+                    } else {
+                        itemsHtml = '<p class="text-gray-300 text-[11px] text-center py-2">부품 선택 정보가 없습니다.</p>';
+                    }
+
+                    return `
+                        <div class="bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                            <div class="flex justify-between items-start mb-4">
+                                <div>
+                                    <span class="px-2 py-0.5 bg-blue-600 text-[10px] font-bold text-white rounded mb-2 inline-block">${req.type || '견적 신청'}</span>
+                                    <h3 class="text-xl font-black text-gray-800">${req.name}</h3>
+                                    <p class="text-sm font-bold text-blue-500">${req.phone}</p>
+                                </div>
+                                <button onclick="deleteData('requests', '${key}')" class="text-gray-300 hover:text-red-500 text-sm">삭제</button>
+                            </div>
+
+                            <div class="bg-gray-50/50 p-4 rounded-2xl mb-4 border border-gray-100">
+                                <p class="text-[9px] font-bold text-gray-400 mb-2 uppercase tracking-wider">Selected Parts Details</p>
+                                <div class="space-y-0.5">
+                                    ${itemsHtml}
+                                </div>
+                            </div>
+
+                            <div class="space-y-2 px-1">
+                                <div class="bg-blue-50/50 p-3 rounded-xl">
+                                    <p class="text-[9px] font-bold text-blue-400 mb-1">고객 요청사항</p>
+                                    <p class="text-[11px] text-gray-600 leading-snug">${req.memo || '내용 없음'}</p>
+                                </div>
+                                <div class="flex justify-between items-center pt-2">
+                                    <span class="text-xs font-bold text-gray-400">최종 견적가</span>
+                                    <span class="text-lg font-black text-gray-900">${req.totalPrice || '0원'}</span>
+                                </div>
+                            </div>
+                            <p class="mt-4 text-[9px] text-gray-300 text-right font-medium italic">${date}</p>
                         </div>
-                        <button onclick="deleteRequest('${id}')" class="text-gray-300 hover:text-red-500">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                        </button>
-                    </div>
-                    <div class="bg-gray-50 p-4 rounded-xl mb-4 text-sm text-gray-600 whitespace-pre-line">
-                        ${items}
-                    </div>
-                    <div class="flex justify-between items-center border-t pt-4">
-                        <div class="text-xs text-gray-400">요청사항: ${memo}</div>
-                        <div class="text-blue-600 font-black">${price} (부가세 별도)</div>
-                    </div>
-                </div>
-            `;
-        }).join('');
-        container.innerHTML = html;
-    });
-}
+                    `;
+                }).join('');
+            });
+        }
 
         // [복구] 2. 자료실 등록 기능
         function addArchive() {
@@ -533,7 +558,7 @@ function deleteQnA(id) {
     function loadRequests() {
         db.ref('requests').orderByChild('timestamp').on('value', (snapshot) => {
             const data = snapshot.val();
-            const container = document.getElementById('request-Container');
+            const container = document.getElementById('request-container');
             if(!data) { container.innerHTML = "<p class='text-gray-400 text-center py-20 font-medium'>신청 내역이 없습니다.</p>"; return; }
 
             let html = "";
