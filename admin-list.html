@@ -558,7 +558,7 @@ function deleteQnA(id) {
     function loadRequests() {
         db.ref('requests').orderByChild('timestamp').on('value', (snapshot) => {
             const data = snapshot.val();
-            const container = document.getElementById('request-container');
+            const container = document.getElementById('requestContainer');
             if(!data) { container.innerHTML = "<p class='text-gray-400 text-center py-20 font-medium'>신청 내역이 없습니다.</p>"; return; }
 
             let html = "";
