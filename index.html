@@ -53,13 +53,12 @@
         </div>
     </nav>
 
-    <header id="seasonHeader" class="relative min-h-screen flex items-center bg-cover bg-center bg-no-repeat transition-all duration-1000">
+    <header id="seasonHeader" class="relative min-h-screen flex items-center bg-cover bg-center bg-no-repeat transition-all duration-1000"
+            style="background-image: url('https://r.jina.ai/i/068019688701460596328636e29780cb');">
         
         <div id="seasonEffectLayer" class="absolute inset-0 z-0 pointer-events-none overflow-hidden"></div>
 
-        <div class="absolute inset-0 bg-black/20 z-[1]"></div>
-
-        <div class="max-w-7xl mx-auto px-4 relative z-10 w-full mt-16">
+        <div class="absolute inset-0 bg-black/10 z-[1]"></div> <div class="max-w-7xl mx-auto px-4 relative z-10 w-full mt-16">
             <div class="max-w-3xl bg-white/80 p-8 md:p-12 rounded-[40px] backdrop-blur-md shadow-2xl border border-white/30">
                 <div class="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-full text-xs font-bold mb-6">
                     <span class="relative flex h-2 w-2">
@@ -101,29 +100,30 @@
 
     <script>
         function setSeasonParams() {
+            // 배경 이미지를 고정하므로 월별 체크 로직은 애니메이션 효과 종류만 결정하는 데 사용합니다.
             const month = new Date().getMonth() + 1;
             const header = document.getElementById('seasonHeader');
             const effectLayer = document.getElementById('seasonEffectLayer');
             
-            let bgUrl = '';
+            // let bgUrl = ''; // 배경 URL 변경 로직 주석 처리
             let effectType = '';
             let effectCount = 0;
 
             if (month >= 3 && month <= 5) {
-                bgUrl = 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?q=80&w=1920';
+                // bgUrl = '...'; // 주석 처리
                 effectType = 'petal'; effectCount = 40;
             } else if (month >= 6 && month <= 8) {
-                bgUrl = 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1920';
+                // bgUrl = '...'; // 주석 처리
                 header.classList.add('summer-effect');
             } else if (month >= 9 && month <= 11) {
-                bgUrl = 'https://images.unsplash.com/photo-1503718134758-a141914aee92?q=80&w=1920';
+                // bgUrl = '...'; // 주석 처리
                 effectType = 'leaf'; effectCount = 25;
             } else {
-                bgUrl = 'https://images.unsplash.com/photo-1418985991508-e473b644948a?q=80&w=1920';
-                effectType = 'snow'; effectCount = 60;
+                // bgUrl = '...'; // 주석 처리
+                effectType = 'snow'; effectCount = snowEffect() ? 60 : 0; // 눈 효과는 유지하되 배경은 변경하지 않음
             }
 
-            header.style.backgroundImage = `url('${bgUrl}')`;
+            // header.style.backgroundImage = `url('${bgUrl}')`; // 배경 URL 변경 로직 주석 처리
 
             if (effectCount > 0) {
                 for (let i = 0; i < effectCount; i++) {
@@ -139,6 +139,13 @@
                 }
             }
         }
+
+        // 눈 효과를 위한 헬퍼 함수
+        function snowEffect() {
+            const effectType = 'snow';
+            return effectType === 'snow';
+        }
+
         window.onload = setSeasonParams;
     </script>
 <div id="contact-fab" onclick="toggleContactModal()" class="fixed bottom-6 left-6 z-[60] cursor-pointer flex items-center gap-3 group">
