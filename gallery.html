@@ -25,6 +25,10 @@
         </div>
     </div>
 </nav>
+    <main class="max-w-7xl mx-auto px-4 py-12">
+        <h1 class="text-3xl font-black mb-8">수리/조립 갤러리</h1>
+        <div id="galleryContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            </div>
     </main>
 
     <script>
@@ -48,8 +52,8 @@
                 Object.keys(data).reverse().forEach(key => {
                     const item = data[key];
                     html += `
-                        <div class="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer" onclick="openImageModal('${item.imgUrl}')">
-                            <img src="${item.imgUrl}" alt="${item.title}" class="w-full h-64 object-cover hover:scale-105 transition-transform duration-300">
+                        <div class="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                            <img src="${item.imgUrl}" alt="${item.title}" class="w-full h-64 object-cover">
                             <div class="p-6">
                                 <span class="text-blue-600 text-xs font-bold uppercase">${item.category}</span>
                                 <h3 class="text-xl font-bold mt-2">${item.title}</h3>
@@ -62,24 +66,6 @@
                 container.innerHTML = html;
             });
         }
-
-// 모달 제어 함수 추가
-function openImageModal(url) {
-    const modal = document.getElementById('imageModal');
-    const modalImg = document.getElementById('modalImg');
-    modalImg.src = url;
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-    document.body.style.overflow = 'hidden'; // 스크롤 방지
-}
-
-function closeImageModal() {
-    const modal = document.getElementById('imageModal');
-    modal.classList.add('hidden');
-    modal.classList.remove('flex');
-    document.body.style.overflow = ''; // 스크롤 복구
-}
-
         window.onload = loadGallery;
     </script>
 </body>
