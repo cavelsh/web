@@ -61,35 +61,24 @@
 
 <button onclick="showSection('galleryAdmin')" class="hover:text-blue-600">갤러리 관리</button>
 
-<section id="galleryAdmin" class="admin-section hidden">
-    <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold">갤러리 관리</h2>
-        <button onclick="openGalleryModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold">+ 새 사례 등록</button>
-    </div>
-    <div id="adminGalleryList" class="grid grid-cols-1 gap-4">
+<section id="galleryAdmin" class="admin-section hidden bg-white rounded-2xl shadow-sm p-6">
+    <h2 class="text-2xl font-bold mb-6">수리/조립 갤러리 등록</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <input type="text" id="galTitle" placeholder="제목 (예: RTX 4070 게이밍 PC 조립)" class="border p-3 rounded-lg">
+        <select id="galCategory" class="border p-3 rounded-lg">
+            <option value="조립">PC 조립</option>
+            <option value="수리">컴퓨터 수리</option>
+            <option value="업그레이드">업그레이드</option>
+            <option value="기타">기타</option>
+        </select>
+        <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-2">작업 사진 선택</label>
+            <input type="file" id="galFile" accept="image/*" class="border p-2 rounded-lg w-full">
         </div>
+        <textarea id="galDesc" placeholder="상세 설명" class="md:col-span-2 border p-3 rounded-lg h-32"></textarea>
+    </div>
+    <button onclick="uploadGalleryItem()" id="uploadBtn" class="bg-blue-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-700">갤러리 등록하기</button>
 </section>
-
-<div id="galleryModal" class="fixed inset-0 bg-black/50 hidden z-[60] items-center justify-center p-4">
-    <div class="bg-white rounded-2xl w-full max-w-md p-8">
-        <h3 id="galleryModalTitle" class="text-xl font-bold mb-4">갤러리 등록</h3>
-        <input type="hidden" id="galleryKey">
-        <div class="space-y-4">
-            <input type="text" id="gTitle" placeholder="제목 (예: 고사양 게이밍 PC 조립)" class="w-full p-3 border rounded-xl">
-            <select id="gCategory" class="w-full p-3 border rounded-xl">
-                <option value="조립">신품 조립</option>
-                <option value="수리">업그레이드/수리</option>
-                <option value="청소">클리닝/정비</option>
-            </select>
-            <input type="text" id="gImgUrl" placeholder="이미지 URL" class="w-full p-3 border rounded-xl">
-            <textarea id="gDesc" placeholder="상세 설명" class="w-full p-3 border rounded-xl h-32"></textarea>
-            <div class="flex gap-2">
-                <button onclick="saveGallery()" class="flex-1 bg-blue-600 text-white py-3 rounded-xl font-bold">저장</button>
-                <button onclick="closeGalleryModal()" class="flex-1 bg-gray-100 py-3 rounded-xl font-bold">취소</button>
-            </div>
-        </div>
-    </div>
-</div>
 
     <section class="mt-12">
     <div class="flex justify-between items-end mb-6">
@@ -200,6 +189,87 @@
         const db = firebase.database();
 
 let editingPartKey = null;
+
+// 갤러리 등록 함수 (파일 직접 업로드 방식)
+async function uploadGalleryItem() {
+    const title = document.getElementById('galTitle').value;
+    const category = document.getElementById('galCategory').value;
+    const desc = document.getElementById('galDesc').value;
+    const fileInput = document.getElementById('galFile');
+    const uploadBtn = document.getElementById('uploadBtn');
+
+    if (!title || !fileInput.files[0]) {
+        alert("제목과 사진은 필수입니다.");
+        return;
+    }
+
+    uploadBtn.disabled = true;
+    uploadBtn.innerText = "업로드 중...";
+
+    const file = fileInput.files[0];
+    
+    // 파일을 데이터 URL(Base64)로 변환하여 저장하는 방식 (소규모 갤러리에 적합)
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = function () {
+        const imgBase64 = reader.result;
+
+        const newGalleryRef = db.ref('gallery').push();
+        newGalleryRef.set({
+            title: title,
+            category: category,
+            desc: desc,
+            imgUrl: imgBase64, // 변환된 이미지 데이터
+            timestamp: Date.now()
+        }).then(() => {
+            alert("갤러리에 새로운 사진이 등록되었습니다!");
+            // 입력창 초기화
+            document.getElementById('galTitle').value = "";
+            document.getElementById('galDesc').value = "";
+            document.getElementById('galFile').value = "";
+            uploadBtn.disabled = false;
+            uploadBtn.innerText = "갤러리 등록하기";
+            loadGalleryAdmin(); // 목록 새로고침
+        }).catch((error) => {
+            console.error(error);
+            alert("등록 실패: " + error.message);
+            uploadBtn.disabled = false;
+            uploadBtn.innerText = "갤러리 등록하기";
+        });
+    };
+}
+
+// 관리자용 갤러리 목록 표시 (삭제 기능 포함)
+function loadGalleryAdmin() {
+    db.ref('gallery').on('value', (snapshot) => {
+        const data = snapshot.val();
+        const container = document.getElementById('galleryAdminList'); // 리스트 보일 div id
+        if (!container) return; 
+
+        let html = '<h3 class="font-bold mt-8 mb-4">현재 등록된 갤러리 리스트</h3><div class="grid grid-cols-2 md:grid-cols-4 gap-4">';
+        if (data) {
+            Object.keys(data).reverse().forEach(key => {
+                const item = data[key];
+                html += `
+                    <div class="border rounded-lg p-2 bg-gray-50 relative">
+                        <img src="${item.imgUrl}" class="w-full h-32 object-cover rounded mb-2">
+                        <p class="text-xs font-bold truncate">${item.title}</p>
+                        <button onclick="deleteGallery('${key}')" class="text-red-500 text-xs mt-2 underline">삭제</button>
+                    </div>
+                `;
+            });
+        }
+        html += '</div>';
+        container.innerHTML = html;
+    });
+}
+
+// 삭제 함수
+function deleteGallery(key) {
+    if (confirm("이 게시물을 삭제하시겠습니까?")) {
+        db.ref('gallery/' + key).remove();
+    }
+
 
 // 갤러리 로드 함수
 function showSection(sectionId) {
