@@ -41,33 +41,33 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-function loadGallery() {
-    db.ref('gallery').on('value', (snapshot) => {
-        const data = snapshot.val();
-        const container = document.getElementById('galleryContainer');
-        if(!data) {
-            container.innerHTML = "<p>등록된 사례가 없습니다.</p>";
-            return;
+        function loadGallery() {
+            db.ref('gallery').on('value', (snapshot) => {
+                const data = snapshot.val();
+                const container = document.getElementById('galleryContainer');
+                if(!data) {
+                    container.innerHTML = "<p>등록된 사례가 없습니다.</p>";
+                    return;
+                }
+                
+                let html = '';
+                Object.keys(data).reverse().forEach(key => {
+                    const item = data[key];
+                    html += `
+                        <div class="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer" onclick="openImageModal('${item.imgUrl}')">
+                            <img src="${item.imgUrl}" alt="${item.title}" class="w-full h-64 object-cover hover:scale-105 transition-transform duration-300">
+                            <div class="p-6">
+                                <span class="text-blue-600 text-xs font-bold uppercase">${item.category}</span>
+                                <h3 class="text-xl font-bold mt-2">${item.title}</h3>
+                                <p class="text-gray-600 mt-2 text-sm">${item.desc}</p>
+                                <p class="text-gray-400 text-xs mt-4">${new Date(item.timestamp).toLocaleDateString()}</p>
+                            </div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            });
         }
-        
-        let html = '';
-        Object.keys(data).reverse().forEach(key => {
-            const item = data[key];
-            html += `
-                <div class="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer" onclick="openImageModal('${item.imgUrl}')">
-                    <img src="${item.imgUrl}" alt="${item.title}" class="w-full h-64 object-cover hover:scale-105 transition-transform duration-300">
-                    <div class="p-6">
-                        <span class="text-blue-600 text-xs font-bold uppercase">${item.category}</span>
-                        <h3 class="text-xl font-bold mt-2">${item.title}</h3>
-                        <p class="text-gray-600 mt-2 text-sm">${item.desc}</p>
-                        <p class="text-gray-400 text-xs mt-4">${new Date(item.timestamp).toLocaleDateString()}</p>
-                    </div>
-                </div>
-            `;
-        });
-        container.innerHTML = html;
-    });
-}
 
 // 모달 제어 함수 추가
 function openImageModal(url) {
