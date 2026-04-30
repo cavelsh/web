@@ -111,17 +111,17 @@
     <div class="p-4 bg-blue-50 rounded-2xl border border-blue-100 flex items-center gap-3 cursor-pointer" onclick="toggleOption('assemblyCheck')">
         <input type="checkbox" id="assemblyCheck" class="w-5 h-5 accent-blue-600" onchange="updateSummary()" unchecked>
         <div class="flex-1">
-            <p class="text-[10px] font-bold text-blue-600 uppercase">컴퓨터 부품 구매후 조립을 원한다면</p>
+            <p class="text-[10px] font-bold text-blue-600 uppercase">컴퓨터 조립후 방문 설치[1년 A/s]</p>
             <p class="text-sm font-bold text-gray-800">컴퓨터 조립비</p>
         </div>
-        <span class="text-sm font-black text-blue-600">50,000원</span>
+        <span class="text-sm font-black text-blue-600">100,000원</span>
     </div>
 
     <!-- 출장 A/S 선택 -->
     <div class="p-4 bg-indigo-50 rounded-2xl border border-indigo-100 flex items-center gap-3 cursor-pointer" onclick="toggleOption('asCheck')">
         <input type="checkbox" id="asCheck" class="w-5 h-5 accent-blue-600" onchange="updateSummary()" checked>
         <div class="flex-1">
-            <p class="text-[10px] font-bold text-indigo-600 uppercase">컴퓨터 또는 부품 방문 설치시 기본 옵션 </p>
+            <p class="text-[10px] font-bold text-indigo-600 uppercase">부품 방문 설치및 수리 기본 옵션 </p>
             <p class="text-sm font-bold text-gray-800">출장 A/S</p>
         </div>
         <span class="text-sm font-black text-indigo-600">40,000원</span>
@@ -201,7 +201,7 @@
         const db = firebase.database();
 
         let selectedItems = {};
-  const ASSEMBLY_FEE = 50000;
+  const ASSEMBLY_FEE = 100000;
   const AS_SERVICE_FEE = 40000;
 
 // [수정] 옵션 토글 함수
