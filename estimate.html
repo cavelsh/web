@@ -345,8 +345,8 @@ function generatePDF(data) {
     }
 
     // 카테고리 분류 기준
-    const mainPartsCat = ["CPU", "쿨러", "메인보드", "메모리", "그래픽카드", "SSD", "HDD", "케이스", "파워"];
-    const peripheryCat = ["모니터", "프린터", "키보드와마우스"];
+    const mainPartsCat = ["CPU", "쿨러", "메인보드", "메모리", "그래픽", "SSD", "HDD", "케이스", "파워"];
+    const peripheryCat = ["모니터", "프린터", "키보드외","저장장치","네트워크"];
 
     let mainTotal = isAssemblyChecked ? ASSEMBLY_FEE : 0;
     let peripheryTotal = 0;
@@ -520,8 +520,9 @@ function generatePDFInNewTab(data) {
     }
 
     const mainPartsCat = ["CPU", "쿨러", "메인보드", "메모리", "그래픽카드", "SSD", "HDD", "케이스", "파워"];
-    const peripheryCat = ["모니터", "프린터", "키보드와마우스", "저장장치"];
+    const peripheryCat = ["모니터", "프린터", "키보드와마우스", "저장장치", "네트워크"];
 
+    // 1. 시스템 구성 부품 렌더링
     let mainRows = Object.entries(data.items)
         .filter(([cat]) => mainPartsCat.includes(cat))
         .map(([cat, item]) => `
@@ -532,13 +533,25 @@ function generatePDFInNewTab(data) {
                 <td style="padding:12px; border:1px solid #e2e8f0; text-align:right;">${(item.price * item.count).toLocaleString()}원</td>
             </tr>`).join('');
 
-    if (data.isAssembly) {
+    // [수정] 조립비 항목 추가 (선택 시에만)
+    if (document.getElementById('assemblyCheck').checked) {
         mainRows += `
-            <tr style="color:#64748b; font-style:italic;">
+            <tr style="color:#2563eb; font-weight:bold; background:#f0f7ff;">
                 <td style="padding:12px; border:1px solid #e2e8f0;">서비스</td>
-                <td style="padding:12px; border:1px solid #e2e8f0;">조립 및 1년 출장 A/S</td>
+                <td style="padding:12px; border:1px solid #e2e8f0;">컴퓨터 전문 조립비</td>
                 <td style="padding:12px; border:1px solid #e2e8f0; text-align:center;">1</td>
-                <td style="padding:12px; border:1px solid #e2e8f0; text-align:right;">100,000원</td>
+                <td style="padding:12px; border:1px solid #e2e8f0; text-align:right;">50,000원</td>
+            </tr>`;
+    }
+
+    // [수정] 출장 A/S 항목 추가 (선택 시에만)
+    if (document.getElementById('asCheck').checked) {
+        mainRows += `
+            <tr style="color:#4f46e5; font-weight:bold; background:#f5f3ff;">
+                <td style="padding:12px; border:1px solid #e2e8f0;">서비스</td>
+                <td style="padding:12px; border:1px solid #e2e8f0;">1년 전국 출장 A/S</td>
+                <td style="padding:12px; border:1px solid #e2e8f0; text-align:center;">1</td>
+                <td style="padding:12px; border:1px solid #e2e8f0; text-align:right;">50,000원</td>
             </tr>`;
     }
 
@@ -581,13 +594,12 @@ function generatePDFInNewTab(data) {
                 </div>
             </div>
             <div class="client-info">
-                <p><strong>발행 번호:</strong> ${Date.now()}</p>
                 <p><strong>고객 성함:</strong> ${data.name} 님</p>
                 <p><strong>연락처:</strong> ${data.phone}</p>
                 <p><strong>발행 일자:</strong> ${new Date().toLocaleDateString()}</p>
             </div>
 
-            <div class="section-title">시스템 구성 부품</div>
+            <div class="section-title">시스템 구성 부품 및 서비스</div>
             <table>
                 <thead><tr><th>구분</th><th>제품명</th><th>수량</th><th style="text-align:right;">금액</th></tr></thead>
                 <tbody>${mainRows || '<tr><td colspan="4" style="text-align:center; padding:20px; color:#94a3b8;">선택된 부품이 없습니다.</td></tr>'}</tbody>
@@ -600,18 +612,9 @@ function generatePDFInNewTab(data) {
                 <tbody>${periRows}</tbody>
             </table>` : ''}
 
-            ${data.memo ? `
-            <div class="section-title">고객 요청사항</div>
-            <div style="padding:15px; background:#f8fafc; border-radius:10px; font-size:14px;">${data.memo}</div>
-            ` : ''}
-
             <div class="total-box">
                 <span style="font-size:16px; opacity:0.8;">최종 견적 합계 (부가세 별도)</span>
                 <div style="font-size:32px; font-weight:900; margin-top:5px;">${data.total_price}</div>
-            </div>
-            
-            <div style="margin-top:50px; text-align:center; color:#94a3b8; font-size:12px;">
-                본 견적은 발행일로부터 3일간 유효하며, 부품 시세에 따라 변동될 수 있습니다.
             </div>
         </body>
         </html>
@@ -620,6 +623,7 @@ function generatePDFInNewTab(data) {
     newTab.document.write(htmlContent);
     newTab.document.close();
 }
+
         function openConsultModal() {
             if (Object.keys(selectedItems).length === 0) {
                 alert("선택된 부품이 없습니다.");
