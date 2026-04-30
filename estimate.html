@@ -422,63 +422,179 @@ document.getElementById('consultForm').addEventListener('submit', async function
     const submitBtn = e.target.querySelector('button[type="submit"]');
     if (submitBtn.disabled) return;
 
-    // 1. 기본 정보 가져오기
     const name = document.getElementById('userName').value;
     const phone = document.getElementById('userPhone').value;
     const memo = document.getElementById('userMemo').value;
-    const totalPrice = document.getElementById('totalDisplay').innerText;
+    const totalPriceText = document.getElementById('totalDisplay').innerText;
     const isAssemblyChecked = document.getElementById('assemblyCheck').checked;
 
-    // 2. 중요: 부품 리스트를 이메일용 텍스트로 변환
-    // 예: "CPU: Intel i7 (1개) / 메인보드: ASUS B760 (1개) ..."
+    // 관리자 페이지 및 이메일 전송을 위한 상세 텍스트 생성
     let itemDetails = Object.entries(selectedItems)
         .map(([cat, item]) => `${cat}: ${item.name} (${item.count}개) - ${(item.price * item.count).toLocaleString()}원`)
         .join('\n');
 
     if (isAssemblyChecked) {
-        itemDetails += `\n추가 옵션: 조립 및 1년 출장 A/S (100,000원)`;
+        itemDetails += `\n[추가] 조립 및 1년 출장 A/S: 100,000원`;
     }
 
+    // 전송할 데이터 객체 (가격 정보 누락 방지)
     const requestData = {
         name: name,
         phone: phone,
         memo: memo,
-        items_list: itemDetails, // 이 변수가 이메일 본문에 들어갈 리스트입니다.
-        total_price: totalPrice,
-        timestamp: new Date().toLocaleString()
+        items_list: itemDetails, 
+        total_price: totalPriceText, // 표시 금액 그대로 저장
+        timestamp: new Date().toISOString()
     };
 
     submitBtn.disabled = true;
     submitBtn.innerText = "전송 중...";
 
     try {
-        // Firebase 저장
+        // 1. Firebase 데이터베이스 전송
         await db.ref('requests').push({
             ...requestData,
-            original_items: selectedItems
+            selected_items_raw: selectedItems, // 상세 분석용 원본 데이터
+            assembly_included: isAssemblyChecked
         });
 
-        // EmailJS 전송 (템플릿 변수명을 맞추는 것이 중요합니다)
+        // 2. EmailJS 이메일 전송
         await emailjs.send("service_ae3ooe5", "template_1snauoj", {
             customer_name: name,
             customer_phone: phone,
-            order_list: itemDetails, // 이메일 템플릿에 {{order_list}}로 설정
-            total_amount: totalPrice,
+            order_list: itemDetails, 
+            total_amount: totalPriceText,
             message: memo
         });
         
-        alert('부품 리스트를 포함한 상담 신청이 완료되었습니다!');
-        generatePDF({...requestData, items: selectedItems});
+        alert('상담 신청이 완료되었습니다. 새 탭에서 견적서를 확인하세요.');
+        
+        // 3. PDF 새 탭 생성 호출
+        generatePDFInNewTab({
+            ...requestData, 
+            items: selectedItems, 
+            isAssembly: isAssemblyChecked
+        });
+
         location.reload(); 
 
     } catch (error) {
-        console.error("오류:", error);
-        alert('전송에 실패했습니다.');
+        console.error("전송 오류:", error);
+        alert('전송 중 오류가 발생했습니다.');
         submitBtn.disabled = false;
         submitBtn.innerText = "신청 완료";
     }
 });
 
+// PDF를 새 탭에 생성하는 함수
+function generatePDFInNewTab(data) {
+    const newTab = window.open('about:blank', '_blank');
+    if (!newTab) {
+        alert("새 탭을 열 수 없습니다. 브라우저 설정에서 팝업을 허용해주세요.");
+        return;
+    }
+
+    const mainPartsCat = ["CPU", "쿨러", "메인보드", "메모리", "그래픽카드", "SSD", "HDD", "케이스", "파워"];
+    const peripheryCat = ["모니터", "프린터", "키보드와마우스", "저장장치"];
+
+    let mainRows = Object.entries(data.items)
+        .filter(([cat]) => mainPartsCat.includes(cat))
+        .map(([cat, item]) => `
+            <tr>
+                <td style="padding:12px; border:1px solid #e2e8f0;">${cat}</td>
+                <td style="padding:12px; border:1px solid #e2e8f0;">${item.name}</td>
+                <td style="padding:12px; border:1px solid #e2e8f0; text-align:center;">${item.count}</td>
+                <td style="padding:12px; border:1px solid #e2e8f0; text-align:right;">${(item.price * item.count).toLocaleString()}원</td>
+            </tr>`).join('');
+
+    if (data.isAssembly) {
+        mainRows += `
+            <tr style="color:#64748b; font-style:italic;">
+                <td style="padding:12px; border:1px solid #e2e8f0;">서비스</td>
+                <td style="padding:12px; border:1px solid #e2e8f0;">조립 및 1년 출장 A/S</td>
+                <td style="padding:12px; border:1px solid #e2e8f0; text-align:center;">1</td>
+                <td style="padding:12px; border:1px solid #e2e8f0; text-align:right;">100,000원</td>
+            </tr>`;
+    }
+
+    let periRows = Object.entries(data.items)
+        .filter(([cat]) => peripheryCat.includes(cat))
+        .map(([cat, item]) => `
+            <tr>
+                <td style="padding:12px; border:1px solid #e2e8f0;">${cat}</td>
+                <td style="padding:12px; border:1px solid #e2e8f0;">${item.name}</td>
+                <td style="padding:12px; border:1px solid #e2e8f0; text-align:center;">${item.count}</td>
+                <td style="padding:12px; border:1px solid #e2e8f0; text-align:right;">${(item.price * item.count).toLocaleString()}원</td>
+            </tr>`).join('');
+
+    const htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>견적서 - ${data.name} 고객님</title>
+            <style>
+                body { font-family: 'Malgun Gothic', sans-serif; padding: 50px; color: #1e293b; line-height: 1.5; }
+                .header { border-bottom: 3px solid #2563eb; padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: flex-end; }
+                .title { font-size: 32px; font-weight: 900; color: #2563eb; margin: 0; }
+                .client-info { margin-bottom: 40px; font-size: 15px; }
+                .section-title { font-size: 18px; font-weight: bold; margin: 30px 0 10px 0; padding-left: 10px; border-left: 4px solid #2563eb; }
+                table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+                th { background: #f8fafc; padding: 12px; border: 1px solid #e2e8f0; font-size: 14px; text-align: left; }
+                .total-box { background: #2563eb; color: white; padding: 25px; border-radius: 15px; text-align: right; margin-top: 50px; }
+                @media print { .no-print { display: none; } }
+            </style>
+        </head>
+        <body>
+            <div class="no-print" style="margin-bottom: 20px; text-align: right;">
+                <button onclick="window.print()" style="padding:10px 20px; background:#1e293b; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">PDF로 저장 / 인쇄하기</button>
+            </div>
+            <div class="header">
+                <h1 class="title">PC ESTIMATE</h1>
+                <div style="text-align:right;">
+                    <p style="margin:0; font-weight:bold; font-size:18px;">Well Design</p>
+                    <p style="margin:0; font-size:12px; color:#64748b;">전문 조립 및 수리 서비스</p>
+                </div>
+            </div>
+            <div class="client-info">
+                <p><strong>발행 번호:</strong> ${Date.now()}</p>
+                <p><strong>고객 성함:</strong> ${data.name} 님</p>
+                <p><strong>연락처:</strong> ${data.phone}</p>
+                <p><strong>발행 일자:</strong> ${new Date().toLocaleDateString()}</p>
+            </div>
+
+            <div class="section-title">시스템 구성 부품</div>
+            <table>
+                <thead><tr><th>구분</th><th>제품명</th><th>수량</th><th style="text-align:right;">금액</th></tr></thead>
+                <tbody>${mainRows || '<tr><td colspan="4" style="text-align:center; padding:20px; color:#94a3b8;">선택된 부품이 없습니다.</td></tr>'}</tbody>
+            </table>
+
+            ${periRows ? `
+            <div class="section-title">주변 기기 및 기타</div>
+            <table>
+                <thead><tr><th>구분</th><th>제품명</th><th>수량</th><th style="text-align:right;">금액</th></tr></thead>
+                <tbody>${periRows}</tbody>
+            </table>` : ''}
+
+            ${data.memo ? `
+            <div class="section-title">고객 요청사항</div>
+            <div style="padding:15px; background:#f8fafc; border-radius:10px; font-size:14px;">${data.memo}</div>
+            ` : ''}
+
+            <div class="total-box">
+                <span style="font-size:16px; opacity:0.8;">최종 견적 합계 (부가세 별도)</span>
+                <div style="font-size:32px; font-weight:900; margin-top:5px;">${data.total_price}</div>
+            </div>
+            
+            <div style="margin-top:50px; text-align:center; color:#94a3b8; font-size:12px;">
+                본 견적은 발행일로부터 3일간 유효하며, 부품 시세에 따라 변동될 수 있습니다.
+            </div>
+        </body>
+        </html>
+    `;
+
+    newTab.document.write(htmlContent);
+    newTab.document.close();
+}
         function openConsultModal() {
             if (Object.keys(selectedItems).length === 0) {
                 alert("선택된 부품이 없습니다.");
