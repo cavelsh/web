@@ -455,7 +455,7 @@ let itemDetails = Object.entries(selectedItems)
     .join('\n');
 
 if (document.getElementById('assemblyCheck').checked) {
-    itemDetails += `\n[서비스] 컴퓨터 조립비: 50,000원`;
+    itemDetails += `\n[서비스] 컴퓨터 조립비: 100,000원`;
 }
 if (document.getElementById('asCheck').checked) {
     itemDetails += `\n[서비스] 출장 A/S: 40,000원`;
@@ -519,8 +519,8 @@ function generatePDFInNewTab(data) {
         return;
     }
 
-    const mainPartsCat = ["CPU", "쿨러", "메인보드", "메모리", "그래픽카드", "SSD", "HDD", "케이스", "파워"];
-    const peripheryCat = ["모니터", "프린터", "키보드와마우스", "저장장치", "네트워크"];
+    const mainPartsCat = ["CPU", "쿨러", "메인보드", "메모리", "그래픽", "SSD", "HDD", "케이스", "파워"];
+    const peripheryCat = ["모니터", "프린터", "키보드외", "저장장치", "네트워크"];
 
     // 1. 시스템 구성 부품 렌더링
     let mainRows = Object.entries(data.items)
