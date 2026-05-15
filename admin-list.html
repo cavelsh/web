@@ -46,9 +46,10 @@
             <p class="text-gray-400 text-sm mt-1">관리자 암호를 입력하세요</p>
         </div>
         
-        <input type="password" id="adminPw" onkeypress="if(event.keyCode==13) checkAdmin()" 
-               class="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl mb-4 text-center text-xl font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all" 
-               placeholder="••••" autofocus>
+        <input type="password" id="adminPw" 
+       onkeypress="if(event.keyCode==13) checkAdmin()" 
+       class="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl mb-4 text-center text-xl font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all" 
+       placeholder="••••" autofocus>
                
         <div class="flex gap-2">
             <button onclick="location.href='index.html'" class="flex-1 py-4 rounded-2xl font-bold text-gray-400 hover:bg-gray-100 transition-all">취소</button>
@@ -730,17 +731,50 @@ window.onload = () => {
         document.getElementById('adminPw').focus();
     }
 
-    function checkAdmin() {
-        const pw = document.getElementById('adminPw').value;
-        if(pw === "0927") { // **
+async function checkAdmin() {
+    const pwInput = document.getElementById('adminPw');
+    const inputPw = pwInput.value;
+    const loginBtn = document.querySelector("button[onclick='checkAdmin()']");
+
+    if (!inputPw) {
+        alert("Passcode를 입력하세요.");
+        return;
+    }
+
+    try {
+        // 로딩 상태 표시
+        loginBtn.innerText = "확인 중...";
+        loginBtn.disabled = true;
+
+        // 1. Firebase Firestore에서 'settings/admin' 문서의 passcode 가져오기
+        // 주의: 현재 코드의 db는 Realtime Database용이므로, Firestore를 쓰려면 추가 설정이 필요할 수 있습니다.
+        // 만약 Realtime Database에 저장하셨다면 아래와 같이 사용합니다.
+        const snapshot = await db.ref('settings/admin/passcode').once('value');
+        const serverPw = snapshot.val() ? snapshot.val().toString() : null;
+
+        if (!serverPw) {
+            alert("서버에 인증 정보가 없습니다. 관리자에게 문의하세요.");
+            return;
+        }
+
+        // 2. 서버 암호와 입력 암호 비교
+        if (inputPw === serverPw) {
             sessionStorage.setItem("adminLoggedIn", "true");
             alert("관리자 인증에 성공했습니다.");
-            location.reload(); // 리스트 로드를 위해 새로고침
+            location.reload(); 
         } else {
             alert("암호가 틀렸습니다.");
-            document.getElementById('adminPw').value = "";
+            pwInput.value = "";
+            pwInput.focus();
         }
+    } catch (e) {
+        console.error("인증 오류:", e);
+        alert("인증 서버에 접속할 수 없습니다.");
+    } finally {
+        loginBtn.innerText = "관리자 로그인";
+        loginBtn.disabled = false;
     }
+}
 
     function logout() {
         if(confirm("로그아웃 하시겠습니까?")) {
