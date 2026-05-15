@@ -742,26 +742,24 @@ async function checkAdmin() {
     }
 
     try {
-        // 로딩 상태 표시
-        loginBtn.innerText = "확인 중...";
+        // 버튼 상태 변경
+        loginBtn.innerText = "인증 중...";
         loginBtn.disabled = true;
 
-        // 1. Firebase Firestore에서 'settings/admin' 문서의 passcode 가져오기
-        // 주의: 현재 코드의 db는 Realtime Database용이므로, Firestore를 쓰려면 추가 설정이 필요할 수 있습니다.
-        // 만약 Realtime Database에 저장하셨다면 아래와 같이 사용합니다.
+        // 1. Firebase Realtime Database에서 암호 가져오기
         const snapshot = await db.ref('settings/admin/passcode').once('value');
-        const serverPw = snapshot.val() ? snapshot.val().toString() : null;
+        const serverPw = snapshot.val();
 
         if (!serverPw) {
-            alert("서버에 인증 정보가 없습니다. 관리자에게 문의하세요.");
+            alert("서버 설정 오류: 관리자 암호가 데이터베이스에 없습니다.");
             return;
         }
 
-        // 2. 서버 암호와 입력 암호 비교
-        if (inputPw === serverPw) {
+        // 2. 입력값과 서버값 비교 (문자열 변환 후 비교)
+        if (inputPw === serverPw.toString()) {
             sessionStorage.setItem("adminLoggedIn", "true");
             alert("관리자 인증에 성공했습니다.");
-            location.reload(); 
+            location.reload(); // 상태 반영을 위해 새로고침
         } else {
             alert("암호가 틀렸습니다.");
             pwInput.value = "";
@@ -769,9 +767,9 @@ async function checkAdmin() {
         }
     } catch (e) {
         console.error("인증 오류:", e);
-        alert("인증 서버에 접속할 수 없습니다.");
+        alert("데이터베이스 접속에 실패했습니다.");
     } finally {
-        loginBtn.innerText = "관리자 로그인";
+        loginBtn.innerText = "접속하기";
         loginBtn.disabled = false;
     }
 }
