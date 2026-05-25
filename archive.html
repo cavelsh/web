@@ -16,21 +16,55 @@
 <body class="bg-gray-50 text-gray-900">
 
     <nav class="sticky top-0 z-50 bg-white border-b border-gray-100">
-        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-8">
-                <a href="index.html" class="text-2xl font-black text-blue-600 tracking-tighter">Well Design</a>
-                <div class="hidden md:flex gap-6 text-sm font-semibold text-gray-600">
-                    <a href="index.html" class="text-blue-600">메인으로</a>
-                    <a href="estimate.html" class="hover:text-blue-600">컴퓨터 견적내기</a>
-                    <a href="trade-in.html" class="hover:text-blue-600">중고 판매</a>
-                    <a href="gallery.html" class="hover:text-blue-600">수리/조립 갤러리</a>
-                    <a href="archive.html" class="hover:text-blue-600">자료실</a>
-                    <a href="qna.html" class="hover:text-blue-600">상담 문의및 답변</a>
-                    <a href="admin-list.html" class="hover:text-blue-600">관리자</a>
-                </div>
+    <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+        <div class="flex items-center gap-8">
+            <a href="index.html" class="text-2xl font-black text-blue-600 tracking-tighter">웰디자인</a>
+            <!-- PC용 메뉴 (기존 유지) -->
+            <div class="hidden md:flex gap-6 text-sm font-semibold text-gray-600">
+                <a href="index.html" class="hover:text-blue-600">메인으로</a>
+                <a href="estimate.html" class="hover:text-blue-600">컴퓨터 견적내기</a>
+                <a href="trade-in.html" class="hover:text-blue-600">중고 판매</a>
+                <a href="gallery.html" class="hover:text-blue-600">수리/조립 갤러리</a>
+                <a href="archive.html" class="hover:text-blue-600">자료실</a>
+                <a href="qna.html" class="hover:text-blue-600">상담 문의및 답변</a>
+                <a href="admin-list.html" class="hover:text-blue-600">관리자</a>
             </div>
         </div>
-    </nav>
+        
+        <!-- 우측 인증 버튼 영역 (기존 유지 혹은 빈 영역) -->
+        <div id="authButtons" class="hidden md:block"></div>
+
+        <!-- 모바일용 햄버거 버튼 (우측 상단 추가) -->
+        <button onclick="toggleMobileMenu()" class="block md:hidden text-gray-600 hover:text-blue-600 focus:outline-none z-[60]" aria-label="메뉴 열기">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+        </button>
+    </div>
+
+    <!-- 모바일 전체 화면 메뉴 오버레이 (초기 hidden 상태) -->
+    <div id="mobileMenu" class="fixed inset-0 bg-white z-50 hidden flex-col p-6 shadow-xl overflow-y-auto">
+        <div class="flex items-center justify-between mb-8">
+            <a href="index.html" class="text-2xl font-black text-blue-600 tracking-tighter">Well Design</a>
+            <!-- 닫기(X) 버튼 -->
+            <button onclick="toggleMobileMenu()" class="text-gray-600 hover:text-red-500 focus:outline-none">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <!-- 모바일 세로형 링크 목록 -->
+        <div class="flex flex-col gap-5 text-lg font-bold text-gray-700">
+            <a href="index.html" class="py-2 border-b border-gray-50 hover:text-blue-600 transition-colors">메인으로</a>
+            <a href="estimate.html" class="py-2 border-b border-gray-50 hover:text-blue-600 transition-colors">컴퓨터 견적내기</a>
+            <a href="trade-in.html" class="py-2 border-b border-gray-50 hover:text-blue-600 transition-colors">중고 판매</a>
+            <a href="gallery.html" class="py-2 border-b border-gray-50 hover:text-blue-600 transition-colors">수리/조립 갤러리</a>
+            <a href="archive.html" class="py-2 border-b border-gray-50 hover:text-blue-600 transition-colors">자료실</a>
+            <a href="qna.html" class="py-2 border-b border-gray-50 hover:text-blue-600 transition-colors">상담 문의및 답변</a>
+            <a href="admin-list.html" class="py-2 border-b border-gray-50 hover:text-blue-600 transition-colors">관리자</a>
+        </div>
+    </div>
+</nav>
 
     <header class="max-w-7xl mx-auto px-4 py-16">
         <h1 class="text-4xl font-black mb-4">자료실</h1>
@@ -64,6 +98,20 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
+
+// 모바일 햄버거 메뉴 토글 기능
+function toggleMobileMenu() {
+    const mobileMenu = document.getElementById('mobileMenu');
+    if (mobileMenu.classList.contains('hidden')) {
+        mobileMenu.classList.remove('hidden');
+        mobileMenu.classList.add('flex');
+        document.body.style.overflow = 'hidden'; // 메뉴가 열렸을 때 뒷배경 스크롤 방지
+    } else {
+        mobileMenu.classList.remove('flex');
+        mobileMenu.classList.add('hidden');
+        document.body.style.overflow = ''; // 스크롤 복구
+    }
+}
 
         // 2. 자료실 데이터 로드 함수
         function loadArchives() {
