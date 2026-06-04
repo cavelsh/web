@@ -54,7 +54,7 @@
     </nav>
 
     <header id="seasonHeader" class="relative min-h-screen flex items-center bg-cover bg-center bg-no-repeat transition-all duration-1000"
-            style="background-image: url('https://i.pinimg.com/originals/7e/8b/e0/7e8be0397f5b82a44260f248d6ebb88b.jpg');">
+            style="background-image: url('');">
         
         <div id="seasonEffectLayer" class="absolute inset-0 z-0 pointer-events-none overflow-hidden"></div>
 
@@ -127,6 +127,7 @@
 
     if (month >= 3 && month <= 5) {
         effectType = 'petal'; effectCount = 40; // 봄: 벚꽃
+        header.style.backgroundImage = "url('https://i.pinimg.com/originals/7e/8b/e0/7e8be0397f5b82a44260f248d6ebb88b.jpg')";
     } else if (month >= 6 && month <= 8) {
         // 여름: 해변 파도 배경 적용
         // 배경 이미지 URL을 사용자가 원하는 해변 이미지로 변경합니다.
