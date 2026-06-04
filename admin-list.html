@@ -17,51 +17,20 @@
 <nav class="sticky top-0 z-50 bg-white border-b border-gray-100">
     <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
         <div class="flex items-center gap-8">
-            <a href="index.html" class="text-2xl font-black text-blue-600 tracking-tighter">웰디자인</a>
-            <!-- PC용 메뉴 (기존 유지) -->
+            <a href="index.html" class="text-2xl font-black text-blue-600 tracking-tighter">Well Design</a>
             <div class="hidden md:flex gap-6 text-sm font-semibold text-gray-600">
-                <a href="index.html" class="hover:text-blue-600">메인으로</a>
-                <a href="estimate.html" class="hover:text-blue-600">컴퓨터 견적내기</a>
-                <a href="trade-in.html" class="hover:text-blue-600">중고 판매</a>
-                <a href="gallery.html" class="hover:text-blue-600">수리/조립 갤러리</a>
-                <a href="archive.html" class="hover:text-blue-600">자료실</a>
-                <a href="qna.html" class="hover:text-blue-600">상담 문의및 답변</a>
-                <a href="admin-list.html" class="hover:text-blue-600">관리자</a>
+                    <a href="index.html" class="text-blue-600">메인으로</a>
+                    <a href="estimate.html" class="hover:text-blue-600">컴퓨터 견적내기</a>
+                    <a href="trade-in.html" class="hover:text-blue-600">중고 판매</a>
+                    <a href="gallery.html" class="hover:text-blue-600">수리/조립 갤러리</a>
+                    <a href="archive.html" class="hover:text-blue-600">자료실</a>
+                     <a href="qna.html" class="hover:text-blue-600">상담 문의및 답변</a>
+                   <a href="admin-list.html" class="hover:text-blue-600">관리자</a>
             </div>
         </div>
         
-        <!-- 우측 인증 버튼 영역 (기존 유지 혹은 빈 영역) -->
-        <div id="authButtons" class="hidden md:block"></div>
-
-        <!-- 모바일용 햄버거 버튼 (우측 상단 추가) -->
-        <button onclick="toggleMobileMenu()" class="block md:hidden text-gray-600 hover:text-blue-600 focus:outline-none z-[60]" aria-label="메뉴 열기">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-        </button>
-    </div>
-
-    <!-- 모바일 전체 화면 메뉴 오버레이 (초기 hidden 상태) -->
-    <div id="mobileMenu" class="fixed inset-0 bg-white z-50 hidden flex-col p-6 shadow-xl overflow-y-auto">
-        <div class="flex items-center justify-between mb-8">
-            <a href="index.html" class="text-2xl font-black text-blue-600 tracking-tighter">웰디자인</a>
-            <!-- 닫기(X) 버튼 -->
-            <button onclick="toggleMobileMenu()" class="text-gray-600 hover:text-red-500 focus:outline-none">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
-        </div>
-        <!-- 모바일 세로형 링크 목록 -->
-        <div class="flex flex-col gap-5 text-lg font-bold text-gray-700">
-            <a href="index.html" class="py-2 border-b border-gray-50 hover:text-blue-600 transition-colors">메인으로</a>
-            <a href="estimate.html" class="py-2 border-b border-gray-50 hover:text-blue-600 transition-colors">컴퓨터 견적내기</a>
-            <a href="trade-in.html" class="py-2 border-b border-gray-50 hover:text-blue-600 transition-colors">중고 판매</a>
-            <a href="gallery.html" class="py-2 border-b border-gray-50 hover:text-blue-600 transition-colors">수리/조립 갤러리</a>
-            <a href="archive.html" class="py-2 border-b border-gray-50 hover:text-blue-600 transition-colors">자료실</a>
-            <a href="qna.html" class="py-2 border-b border-gray-50 hover:text-blue-600 transition-colors">상담 문의및 답변</a>
-            <a href="admin-list.html" class="py-2 border-b border-gray-50 hover:text-blue-600 transition-colors">관리자</a>
-        </div>
+        <div id="authButtons">
+            </div>
     </div>
 </nav>
 
@@ -234,29 +203,6 @@
         const db = firebase.database();
 
 let editingPartKey = null;
-
-// 모바일 햄버거 메뉴 토글 기능
-function toggleMobileMenu() {
-    const mobileMenu = document.getElementById('mobileMenu');
-    // 햄버거 버튼 요소를 가져옵니다. (클래스나 구조 기반으로 선택)
-    const hamburgerBtn = document.querySelector('nav button[aria-label="메뉴 열기"]');
-
-    if (mobileMenu.classList.contains('hidden')) {
-        mobileMenu.classList.remove('hidden');
-        mobileMenu.classList.add('flex');
-        document.body.style.overflow = 'hidden'; 
-        
-        // 메뉴가 열리면 햄버거 버튼을 숨깁니다.
-        if(hamburgerBtn) hamburgerBtn.classList.add('hidden');
-    } else {
-        mobileMenu.classList.remove('flex');
-        mobileMenu.classList.add('hidden');
-        document.body.style.overflow = ''; 
-        
-        // 메뉴가 닫히면 햄버거 버튼을 다시 보여줍니다.
-        if(hamburgerBtn) hamburgerBtn.classList.remove('hidden');
-    }
-}
 
 // 갤러리 로드 함수
 function showSection(sectionId) {
@@ -788,7 +734,7 @@ window.onload = () => {
 async function checkAdmin() {
     const pwInput = document.getElementById('adminPw');
     const inputPw = pwInput.value;
-    const loginBtn = document.querySelector("#loginModal button[onclick='checkAdmin()']");
+    const loginBtn = document.querySelector("button[onclick='checkAdmin()']");
 
     if (!inputPw) {
         alert("Passcode를 입력하세요.");
@@ -796,28 +742,35 @@ async function checkAdmin() {
     }
 
     try {
+        // 버튼 상태 변경
         loginBtn.innerText = "인증 중...";
         loginBtn.disabled = true;
 
-        // 🔒 고정된 비밀번호 대신 Firebase 고유 인증 기능 사용 (코드를 봐도 비밀번호 노출 안 됨)
-        // 아이디는 고정해두고 입력받은 비밀번호로 로그인을 시도합니다.
-        await firebase.auth().signInWithEmailAndPassword("콘솔에등록한이메일@example.com", inputPw);
-        
-        // 로그인 성공 시
-        sessionStorage.setItem("adminLoggedIn", "true");
-        alert("관리자 인증에 성공했습니다.");
-        location.reload();
+        // 1. Firebase Realtime Database에서 암호 가져오기
+        const snapshot = await db.ref('settings/admin/passcode').once('value');
+        const serverPw = snapshot.val();
 
+        if (!serverPw) {
+            alert("서버 설정 오류: 관리자 암호가 데이터베이스에 없습니다.");
+            return;
+        }
+
+        // 2. 입력값과 서버값 비교 (문자열 변환 후 비교)
+        if (inputPw === serverPw.toString()) {
+            sessionStorage.setItem("adminLoggedIn", "true");
+            alert("관리자 인증에 성공했습니다.");
+            location.reload(); // 상태 반영을 위해 새로고침
+        } else {
+            alert("암호가 틀렸습니다.");
+            pwInput.value = "";
+            pwInput.focus();
+        }
     } catch (e) {
         console.error("인증 오류:", e);
-        alert("암호가 틀렸거나 인증에 실패했습니다.");
-        pwInput.value = "";
-        pwInput.focus();
+        alert("데이터베이스 접속에 실패했습니다.");
     } finally {
-        if(loginBtn) {
-            loginBtn.innerText = "접속하기";
-            loginBtn.disabled = false;
-        }
+        loginBtn.innerText = "접속하기";
+        loginBtn.disabled = false;
     }
 }
 
