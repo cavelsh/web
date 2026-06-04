@@ -788,7 +788,7 @@ window.onload = () => {
 async function checkAdmin() {
     const pwInput = document.getElementById('adminPw');
     const inputPw = pwInput.value;
-    const loginBtn = document.querySelector("button[onclick='checkAdmin()']");
+    const loginBtn = document.querySelector("#loginModal button[onclick='checkAdmin()']");
 
     if (!inputPw) {
         alert("Passcode를 입력하세요.");
@@ -799,28 +799,28 @@ async function checkAdmin() {
         loginBtn.innerText = "인증 중...";
         loginBtn.disabled = true;
 
-        // [수정] DB에서 가져오는 대신 특정 마스터 비밀번호와 직접 비교
-        // ※ 주의: 프론트엔드 자바스크립트에 평문으로 두면 소스보기로 노출되므로 복잡하게 조합하거나 
-        // 추후 Firebase Auth(이메일 로그인) 도입을 강력히 권장합니다.
-        const masterPasscode = "원하는비밀번호입력"; 
+        // 🔒 고정된 비밀번호 대신 Firebase 고유 인증 기능 사용 (코드를 봐도 비밀번호 노출 안 됨)
+        // 아이디는 고정해두고 입력받은 비밀번호로 로그인을 시도합니다.
+        await firebase.auth().signInWithEmailAndPassword("콘솔에등록한이메일@example.com", inputPw);
+        
+        // 로그인 성공 시
+        sessionStorage.setItem("adminLoggedIn", "true");
+        alert("관리자 인증에 성공했습니다.");
+        location.reload();
 
-        if (inputPw === masterPasscode) {
-            sessionStorage.setItem("adminLoggedIn", "true");
-            alert("관리자 인증에 성공했습니다.");
-            location.reload();
-        } else {
-            alert("암호가 틀렸습니다.");
-            pwInput.value = "";
-            pwInput.focus();
-        }
     } catch (e) {
         console.error("인증 오류:", e);
-        alert("인증 처리 중 오류가 발생했습니다.");
+        alert("암호가 틀렸거나 인증에 실패했습니다.");
+        pwInput.value = "";
+        pwInput.focus();
     } finally {
-        loginBtn.innerText = "접속하기";
-        loginBtn.disabled = false;
+        if(loginBtn) {
+            loginBtn.innerText = "접속하기";
+            loginBtn.disabled = false;
+        }
     }
 }
+
     function logout() {
         if(confirm("로그아웃 하시겠습니까?")) {
             sessionStorage.removeItem("adminLoggedIn");
