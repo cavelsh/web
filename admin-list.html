@@ -796,24 +796,18 @@ async function checkAdmin() {
     }
 
     try {
-        // 버튼 상태 변경
         loginBtn.innerText = "인증 중...";
         loginBtn.disabled = true;
 
-        // 1. Firebase Realtime Database에서 암호 가져오기
-        const snapshot = await db.ref('settings/admin/passcode').once('value');
-        const serverPw = snapshot.val();
+        // [수정] DB에서 가져오는 대신 특정 마스터 비밀번호와 직접 비교
+        // ※ 주의: 프론트엔드 자바스크립트에 평문으로 두면 소스보기로 노출되므로 복잡하게 조합하거나 
+        // 추후 Firebase Auth(이메일 로그인) 도입을 강력히 권장합니다.
+        const masterPasscode = "원하는비밀번호입력"; 
 
-        if (!serverPw) {
-            alert("서버 설정 오류: 관리자 암호가 데이터베이스에 없습니다.");
-            return;
-        }
-
-        // 2. 입력값과 서버값 비교 (문자열 변환 후 비교)
-        if (inputPw === serverPw.toString()) {
+        if (inputPw === masterPasscode) {
             sessionStorage.setItem("adminLoggedIn", "true");
             alert("관리자 인증에 성공했습니다.");
-            location.reload(); // 상태 반영을 위해 새로고침
+            location.reload();
         } else {
             alert("암호가 틀렸습니다.");
             pwInput.value = "";
@@ -821,7 +815,7 @@ async function checkAdmin() {
         }
     } catch (e) {
         console.error("인증 오류:", e);
-        alert("데이터베이스 접속에 실패했습니다.");
+        alert("인증 처리 중 오류가 발생했습니다.");
     } finally {
         loginBtn.innerText = "접속하기";
         loginBtn.disabled = false;
