@@ -115,11 +115,23 @@
 
         <hr class="border-gray-200">
 
-        <section>
+<section>
             <h2 class="text-2xl font-black mb-6 flex items-center gap-2">
                 <span class="w-2 h-8 bg-orange-500 rounded-full"></span> 자료실 관리
             </h2>
             <div class="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm">
+                <!-- 등록 방식 선택 라디오 버튼 -->
+                <div class="flex gap-6 mb-4 px-2">
+                    <label class="flex items-center gap-2 cursor-pointer text-sm font-bold text-gray-700">
+                        <input type="radio" name="arcType" value="url" checked onchange="toggleArchiveInput()" class="accent-orange-500 w-4 h-4">
+                        외부 링크(URL) 등록
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer text-sm font-bold text-gray-700">
+                        <input type="radio" name="arcType" value="file" onchange="toggleArchiveInput()" class="accent-orange-500 w-4 h-4">
+                        간단한 파일 직접 첨부 (최대 5MB)
+                    </label>
+                </div>
+
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                     <select id="arcCategory" class="px-5 py-4 bg-gray-50 border-none rounded-2xl outline-none text-sm font-bold">
                         <option>드라이버</option>
@@ -127,12 +139,19 @@
                         <option>BIOS</option>
                     </select>
                     <input type="text" id="arcTitle" placeholder="자료 제목 (예: 인텔 메인보드 칩셋 드라이버)" class="md:col-span-2 px-5 py-4 bg-gray-50 border-none rounded-2xl outline-none text-sm">
+                    
+                    <!-- URL 입력창 -->
                     <input type="text" id="arcLink" placeholder="다운로드 링크(URL)" class="px-5 py-4 bg-gray-50 border-none rounded-2xl outline-none text-sm">
+                    
+                    <!-- 파일 업로드 입력창 (초기 숨김) -->
+                    <div id="arcFileBox" class="hidden flex items-center px-4 py-3 bg-gray-50 rounded-2xl">
+                        <input type="file" id="arcFile" class="text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-orange-100 file:text-orange-600 hover:file:bg-orange-200 cursor-pointer w-full">
+                    </div>
                 </div>
-                <button onclick="addArchive()" class="w-full bg-orange-500 text-white py-4 rounded-2xl font-black hover:bg-orange-600 transition-all">신규 자료 등록</button>
+                <button id="arcSubmitBtn" onclick="addArchive()" class="w-full bg-orange-500 text-white py-4 rounded-2xl font-black hover:bg-orange-600 transition-all">신규 자료 등록</button>
                 
                 <div id="archiveAdminList" class="grid grid-cols-1 gap-3 mt-8">
-                    </div>
+                </div>
             </div>
         </section>
 
