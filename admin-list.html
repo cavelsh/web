@@ -397,28 +397,90 @@ function loadRequests() {
     });
 }
 
-        // [복구] 2. 자료실 등록 기능
-        function addArchive() {
-            const category = document.getElementById('arcCategory').value;
-            const title = document.getElementById('arcTitle').value;
-            const link = document.getElementById('arcLink').value;
-            
-            if(!title || !link) return alert("자료 제목과 다운로드 링크를 입력해주세요.");
+// 등록 방식 전환 (URL <-> 파일)
+        function toggleArchiveInput() {
+            const type = document.querySelector('input[name="arcType"]:checked').value;
+            const linkInput = document.getElementById('arcLink');
+            const fileBox = document.getElementById('arcFileBox');
 
-            db.ref('archives').push({
-                category,
-                title,
-                link,
-                date: new Date().toISOString().split('T')[0]
-            }).then(() => {
-                alert("자료가 등록되었습니다.");
-                document.getElementById('arcTitle').value = '';
-                document.getElementById('arcLink').value = '';
-            });
+            if (type === 'url') {
+                linkInput.classList.remove('hidden');
+                fileBox.classList.add('hidden');
+            } else {
+                linkInput.classList.add('hidden');
+                fileBox.classList.remove('hidden');
+            }
+        }
+
+        // [복구] 2. 자료실 등록 기능
+function addArchive() {
+            const category = document.getElementById('arcCategory').value;
+            const title = document.getElementById('arcTitle').value.trim();
+            const type = document.querySelector('input[name="arcType"]:checked').value;
+            const btn = document.getElementById('arcSubmitBtn');
+
+            if (!title) return alert("자료 제목을 입력해주세요.");
+
+            if (type === 'url') {
+                const link = document.getElementById('arcLink').value.trim();
+                if (!link) return alert("다운로드 링크(URL)를 입력해주세요.");
+
+                db.ref('archives').push({
+                    category,
+                    title,
+                    type: 'url',
+                    link,
+                    date: new Date().toISOString().split('T')[0]
+                }).then(() => {
+                    alert("자료가 등록되었습니다.");
+                    document.getElementById('arcTitle').value = '';
+                    document.getElementById('arcLink').value = '';
+                });
+            } else {
+                const fileInput = document.getElementById('arcFile');
+                const file = fileInput.files[0];
+                if (!file) return alert("첨부할 파일을 선택해주세요.");
+
+                // 실시간 DB 과부하 방지를 위한 용량 제한 (5MB)
+                const MAX_SIZE = 5 * 1024 * 1024;
+                if (file.size > MAX_SIZE) {
+                    return alert("파일 용량이 너무 큽니다. 5MB 이하의 파일만 첨부 가능합니다.\n(대용량 파일은 구글 드라이브 등에 올린 후 URL로 등록해주세요.)");
+                }
+
+                btn.disabled = true;
+                btn.innerText = "파일 변환 및 업로드 중...";
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const fileData = e.target.result; // Base64 Data URL
+                    const fileSizeKB = (file.size / 1024).toFixed(1) + ' KB';
+
+                    db.ref('archives').push({
+                        category,
+                        title,
+                        type: 'file',
+                        fileName: file.name,
+                        fileSize: fileSizeKB,
+                        fileData: fileData,
+                        date: new Date().toISOString().split('T')[0]
+                    }).then(() => {
+                        alert("파일 자료가 등록되었습니다.");
+                        document.getElementById('arcTitle').value = '';
+                        fileInput.value = '';
+                    }).catch((err) => {
+                        console.error(err);
+                        alert("업로드 중 오류가 발생했습니다.");
+                    }).finally(() => {
+                        btn.disabled = false;
+                        btn.innerText = "신규 자료 등록";
+                    });
+                };
+                reader.readAsDataURL(file);
+            }
         }
 
         // [복구] 3. 자료실 리스트 로드
-        function loadArchiveAdmin() {
+function loadArchiveAdmin() {
             db.ref('archives').on('value', (snapshot) => {
                 const data = snapshot.val();
                 const list = document.getElementById('archiveAdminList');
@@ -427,15 +489,23 @@ function loadRequests() {
                     return;
                 }
 
-                list.innerHTML = Object.keys(data).reverse().map(key => `
-                    <div class="flex justify-between items-center bg-gray-50 p-4 rounded-2xl border border-gray-100 group">
-                        <div class="flex items-center gap-4">
-                            <span class="text-[10px] font-bold px-2 py-1 bg-white border border-gray-200 rounded text-gray-500">${data[key].category}</span>
-                            <span class="text-sm font-bold text-gray-700">${data[key].title}</span>
+                list.innerHTML = Object.keys(data).reverse().map(key => {
+                    const item = data[key];
+                    const badge = item.type === 'file' 
+                        ? `<span class="text-[10px] font-bold px-2 py-0.5 bg-orange-50 text-orange-600 rounded">파일 (${item.fileName} · ${item.fileSize || ''})</span>`
+                        : `<span class="text-[10px] font-bold px-2 py-0.5 bg-blue-50 text-blue-600 rounded">URL 링크</span>`;
+
+                    return `
+                        <div class="flex justify-between items-center bg-gray-50 p-4 rounded-2xl border border-gray-100 group">
+                            <div class="flex items-center gap-3 flex-wrap">
+                                <span class="text-[10px] font-bold px-2 py-1 bg-white border border-gray-200 rounded text-gray-500">${item.category}</span>
+                                <span class="text-sm font-bold text-gray-700">${item.title}</span>
+                                ${badge}
+                            </div>
+                            <button onclick="deleteData('archives', '${key}')" class="text-xs font-bold text-red-400 opacity-0 group-hover:opacity-100 transition-all hover:underline shrink-0">삭제</button>
                         </div>
-                        <button onclick="deleteData('archives', '${key}')" class="text-xs font-bold text-red-400 opacity-0 group-hover:opacity-100 transition-all hover:underline">삭제</button>
-                    </div>
-                `).join('');
+                    `;
+                }).join('');
             });
         }
 

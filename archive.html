@@ -122,7 +122,7 @@ function toggleMobileMenu() {
     }
 }
 
-        // 2. 자료실 데이터 로드 함수
+// 2. 자료실 데이터 로드 함수 (URL 및 첨부파일 모두 지원)
         function loadArchives() {
             const archiveBody = document.getElementById('archiveBody');
             
@@ -136,11 +136,22 @@ function toggleMobileMenu() {
 
                 const html = Object.keys(data).reverse().map(key => {
                     const item = data[key];
+                    
                     // 카테고리별 색상 구분
                     let colorClass = "bg-gray-100 text-gray-600";
                     if(item.category === '드라이버') colorClass = "bg-blue-50 text-blue-600";
                     if(item.category === '매뉴얼') colorClass = "bg-orange-50 text-orange-600";
                     if(item.category === 'BIOS') colorClass = "bg-purple-50 text-purple-600";
+
+                    // 파일 첨부인지 URL인지에 따른 다운로드 버튼 속성 및 부가 정보 분기
+                    const isFile = item.type === 'file' && item.fileData;
+                    const downloadAttr = isFile 
+                        ? `href="${item.fileData}" download="${item.fileName || item.title}"` 
+                        : `href="${item.link}" target="_blank" rel="noopener noreferrer"`;
+                    
+                    const subInfo = isFile 
+                        ? `<div class="text-xs text-gray-400 mt-1 font-normal">첨부파일: ${item.fileName} (${item.fileSize || ''})</div>` 
+                        : '';
 
                     return `
                         <tr class="hover:bg-gray-50/50 transition-colors">
@@ -151,12 +162,13 @@ function toggleMobileMenu() {
                             </td>
                             <td class="p-5">
                                 <div class="font-bold text-gray-800">${item.title}</div>
+                                ${subInfo}
                             </td>
                             <td class="p-5 text-center text-sm text-gray-400 font-medium">
                                 ${item.date}
                             </td>
                             <td class="p-5 text-right">
-                                <a href="${item.link}" target="_blank" class="inline-flex items-center justify-center w-10 h-10 bg-gray-900 text-white rounded-xl hover:bg-blue-600 transition-all shadow-sm">
+                                <a ${downloadAttr} title="${isFile ? '파일 다운로드' : '링크 이동'}" class="inline-flex items-center justify-center w-10 h-10 bg-gray-900 text-white rounded-xl hover:bg-blue-600 transition-all shadow-sm">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                                 </a>
                             </td>
